@@ -47,6 +47,11 @@ export async function getPublicBookedSlots(start:string,end:string) {
   return data || [];
 }
 
+export async function hasConflict(start:string,end:string) {
+  const rows = await getPublicBookedSlots(start,end);
+  return rows.length > 0;
+}
+
 export async function getAvailability(hostSlug:string, weekday:number) {
   const supabase = await createClient();
   const { data, error } = await supabase
