@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { getBookingByToken, hasConflict, updateBooking } from "@/lib/store";
+import { cancelBookingByToken, getBookingByToken, rescheduleBookingByToken } from "@/lib/store";
 import { deleteCalendarEvent, updateCalendarEvent } from "@/lib/calendar";
 import { sendCancellation } from "@/lib/email";
 
@@ -23,13 +23,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ to
 
   if (body.action === "cancel") {
     await deleteCalendarEvent(booking.calendarEventId);
-    const updated = await updateBooking(booking.id, { status: "cancelled", crmStage: "lost" });
+    const updated = await cancelBookingByToken(token);
     await sendCancellation({ customerEmail: booking.customerEmail, customerName: booking.customerName, hostName: booking.hostName, start: booking.start });
     return Response.json({ ok: true, booking: updated });
   }
 
-  if (await hasConflict(body.start, body.end, booking.id)) return Response.json({ error: "Khung giờ mới đã có người đặt." }, { status: 409 });
   await updateCalendarEvent(booking.calendarEventId, { start: body.start, end: body.end });
-  const updated = await updateBooking(booking.id, { start: body.start, end: body.end, status: "confirmed", reminder24hSentAt: null, reminder1hSentAt: null });
-  return Response.json({ ok: true, booking: updated });
+  try {
+    const updated = await rescheduleBookingByToken(token,body.start,body.end);
+    return Response.json({ ok: true, booking: updated });
+  } catch {
+    return Response.json({ error: "Khung giờ mới đã có người đặt hoặc không hợp lệ." }, { status: 409 });
+  }
 }
