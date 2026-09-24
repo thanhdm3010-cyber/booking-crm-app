@@ -8,6 +8,20 @@ function getClient() {
   return client;
 }
 
+export async function getGoogleBusy(start:string,end:string) {
+  const auth = getClient();
+  if (!auth) return [];
+  const calendar = google.calendar({ version: "v3", auth });
+  const response = await calendar.freebusy.query({
+    requestBody:{
+      timeMin:start,
+      timeMax:end,
+      items:[{id:process.env.GOOGLE_CALENDAR_ID || "primary"}]
+    }
+  });
+  return response.data.calendars?.[process.env.GOOGLE_CALENDAR_ID || "primary"]?.busy || [];
+}
+
 export async function createCalendarEvent(input: {
   summary: string; description: string; start: string; end: string; attendeeEmail: string;
 }) {
