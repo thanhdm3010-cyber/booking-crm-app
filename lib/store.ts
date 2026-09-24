@@ -35,6 +35,43 @@ export async function getBookings(): Promise<Booking[]> {
   return (data || []).map(fromRow);
 }
 
+export async function getPublicBookedSlots(start:string,end:string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('start_at,end_at,status')
+    .eq('status','confirmed')
+    .lt('start_at',end)
+    .gt('end_at',start);
+  if (error) throw error;
+  return data || [];
+}
+
+export async function getAvailability(hostSlug:string, weekday:number) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('availability')
+    .select('start_time,end_time,timezone')
+    .eq('host_slug',hostSlug)
+    .eq('weekday',weekday)
+    .eq('is_active',true)
+    .order('start_time');
+  if (error) throw error;
+  return data || [];
+}
+
+export async function getBusyBlocks(hostSlug:string,start:string,end:string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('busy_blocks')
+    .select('start_at,end_at')
+    .eq('host_slug',hostSlug)
+    .lt('start_at',end)
+    .gt('end_at',start);
+  if (error) throw error;
+  return data || [];
+}
+
 export async function saveBooking(booking: Booking) {
   const supabase = await createClient();
   const { error } = await supabase.from('bookings').insert({
@@ -59,9 +96,24 @@ export async function saveBooking(booking: Booking) {
 
 export async function getBookingByToken(token: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase.from('bookings').select('*').eq('manage_token',token).maybeSingle();
+  const { data, error } = await supabase.rpc('get_booking_by_manage_token',{p_token:token});
   if (error) throw error;
-  return data ? fromRow(data) : null;
+  const row = data?.[0];
+  return row ? fromRow(row) : null;
+}
+
+export async function cancelBookingByToken(token:string) {
+  const supabase = await createClient();
+  const { data,error } = await supabase.rpc('cancel_booking_by_manage_token',{p_token:token});
+  if(error) throw error;
+  return data?.[0] ? fromRow(data[0]) : null;
+}
+
+export async function rescheduleBookingByToken(token:string,start:string,end:string) {
+  const supabase = await createClient();
+  const { data,error } = await supabase.rpc('reschedule_booking_by_manage_token',{p_token:token,p_start:start,p_end:end});
+  if(error) throw error;
+  return data?.[0] ? fromRow(data[0]) : null;
 }
 
 export async function updateBooking(id: string, patch: Partial<Booking>) {
@@ -79,16 +131,4 @@ export async function updateBooking(id: string, patch: Partial<Booking>) {
   const { data, error } = await supabase.from('bookings').update(row).eq('id',id).select('*').maybeSingle();
   if (error) throw error;
   return data ? fromRow(data) : null;
-}
-
-export async function hasConflict(start: string, end: string, excludeId?: string) {
-  const supabase = await createClient();
-  let q = supabase.from('bookings').select('id,start_at,end_at,status')
-    .eq('status','confirmed')
-    .lt('start_at', end)
-    .gt('end_at', start);
-  if (excludeId) q = q.neq('id',excludeId);
-  const { data, error } = await q.limit(1);
-  if (error) throw error;
-  return (data || []).length > 0;
 }
