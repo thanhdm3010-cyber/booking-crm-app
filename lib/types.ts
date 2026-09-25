@@ -11,6 +11,7 @@ export type Booking = {
   customerEmail: string;
   customerPhone?: string;
   note?: string;
+  surveyData?: Record<string, unknown>;
   source?: string;
   campaign?: string;
   start: string;
