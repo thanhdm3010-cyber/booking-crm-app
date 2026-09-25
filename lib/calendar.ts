@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+import { config } from "./config";
 
 function getClient() {
   const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN } = process.env;
@@ -26,26 +27,31 @@ export async function createCalendarEvent(input: {
   summary: string; description: string; start: string; end: string; attendeeEmail: string;
 }) {
   const auth = getClient();
-  if (!auth) return { eventId: null, meetUrl: null, skipped: true };
+  const zoomInfo = [
+    input.description,
+    "",
+    "Tham dự qua Zoom:",
+    config.zoomUrl,
+    "Meeting ID: " + config.zoomMeetingId,
+    "Passcode: " + config.zoomPasscode
+  ].filter(Boolean).join("\n");
+
+  if (!auth) return { eventId: null, meetUrl: config.zoomUrl, skipped: true };
   const calendar = google.calendar({ version: "v3", auth });
   const response = await calendar.events.insert({
     calendarId: process.env.GOOGLE_CALENDAR_ID || "primary",
-    conferenceDataVersion: 1,
     sendUpdates: "all",
     requestBody: {
       summary: input.summary,
-      description: input.description,
+      description: zoomInfo,
+      location: config.zoomUrl,
       start: { dateTime: input.start },
       end: { dateTime: input.end },
-      attendees: [{ email: input.attendeeEmail }],
-      conferenceData: {
-        createRequest: { requestId: crypto.randomUUID(), conferenceSolutionKey: { type: "hangoutsMeet" } }
-      }
+      attendees: [{ email: input.attendeeEmail }]
     }
   });
   const event = response.data;
-  const meetUrl = event.hangoutLink || event.conferenceData?.entryPoints?.find((x) => x.entryPointType === "video")?.uri || null;
-  return { eventId: event.id || null, meetUrl, skipped: false };
+  return { eventId: event.id || null, meetUrl: config.zoomUrl, skipped: false };
 }
 
 export async function updateCalendarEvent(eventId: string | null | undefined, input: { start: string; end: string }) {
