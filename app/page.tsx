@@ -7,8 +7,7 @@ export default function HomePage() {
         <div className="eyebrow">Booking MVP</div>
         <h1>Đặt lịch đơn giản.<br/>Tự động xác nhận.</h1>
         <p className="muted">
-          Bản MVP cho phép khách chọn lịch, hệ thống chống trùng giờ,
-          gửi email và tạo Google Calendar/Meet khi đã cấu hình.
+          Khách chọn lịch, hệ thống chống trùng giờ, gửi email và dùng Zoom cho buổi tư vấn.
         </p>
       </div>
       <div className="card">
