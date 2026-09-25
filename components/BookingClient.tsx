@@ -22,6 +22,8 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
   const [surveyDraft,setSurveyDraft]=useState<any>({});
   const [date,setDate]=useState(days[0].toISOString().slice(0,10));
   const [slots,setSlots]=useState<Slot[]>([]);
+  const [slotsLoading,setSlotsLoading]=useState(false);
+  const [slotsError,setSlotsError]=useState("");
   const [selected,setSelected]=useState<Slot|null>(null);
   const [loading,setLoading]=useState(false);
   const [bookingComplete,setBookingComplete]=useState(false);
@@ -29,9 +31,23 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
 
   async function loadSlots(d:string){
     setSelected(null);
-    const res=await fetch("/api/slots?date="+d+"&slug="+slug);
-    const data=await res.json();
-    setSlots(data.slots||[]);
+    setSlotsLoading(true);
+    setSlotsError("");
+    try{
+      const controller=new AbortController();
+      const timer=setTimeout(()=>controller.abort(),6000);
+      const res=await fetch("/api/slots?date="+d+"&slug="+slug,{signal:controller.signal,cache:"no-store"});
+      clearTimeout(timer);
+      if(!res.ok) throw new Error("Không tải được lịch");
+      const data=await res.json();
+      setSlots(data.slots||[]);
+    }catch(error){
+      console.error("loadSlots failed",error);
+      setSlots([]);
+      setSlotsError("Không tải được lịch. Anh/chị vui lòng thử lại.");
+    }finally{
+      setSlotsLoading(false);
+    }
   }
   useEffect(()=>{if(step==="booking") loadSlots(date)},[date,step]);
 
@@ -224,7 +240,12 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
         <div className="eyebrow">Chọn thời gian</div><h2>{hostName}</h2>
         <p className="muted">Tư vấn 1:1 · 45 phút · Múi giờ Việt Nam</p>
         <div className="days">{days.map(d=>{const value=d.toISOString().slice(0,10);return <button key={value} className={"day "+(date===value?"active":"")} onClick={()=>setDate(value)}><div>{d.toLocaleDateString("vi-VN",{weekday:"short"})}</div><strong>{d.getDate()}</strong></button>})}</div>
-        <div className="slots">{slots.length===0&&<p className="muted">Ngày này không còn khung giờ trống.</p>}{slots.map(s=><button key={s.start} className={"slot "+(selected?.start===s.start?"active":"")} onClick={()=>setSelected(s)}>{s.label}</button>)}</div>
+        <div className="slots">
+          {slotsLoading && <p className="muted">Đang tải lịch trống...</p>}
+          {!slotsLoading && slotsError && <div><p className="error">{slotsError}</p><button type="button" className="secondary" onClick={()=>loadSlots(date)}>Thử tải lại</button></div>}
+          {!slotsLoading && !slotsError && slots.length===0&&<p className="muted">Ngày này không còn khung giờ trống.</p>}
+          {!slotsLoading && !slotsError && slots.map(s=><button key={s.start} className={"slot "+(selected?.start===s.start?"active":"")} onClick={()=>setSelected(s)}>{s.label}</button>)}
+        </div>
       </section>
       <section className="card">
         <div className="eyebrow">Xác nhận</div><h2>Hoàn tất đặt lịch</h2>
