@@ -140,6 +140,9 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
 
     <div className="thankyou-layout">
       <div className="thankyou-message">
+        <div className="thankyou-person">
+          <img src={brandPortrait} alt="Đỗ Mạnh Thành" />
+        </div>
         <div className="lunch-badge">Một lời động viên nhỏ 💚</div>
         <h2>Mời Thành một bữa trưa nhé!</h2>
         <h3>Cảm ơn anh/chị đã đặt lịch thành công.</h3>
