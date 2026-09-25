@@ -42,8 +42,19 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
       dailyTime:field(fd,"dailyTime"), videosPerWeek:field(fd,"videosPerWeek"), postsPerWeek:field(fd,"postsPerWeek"),
       commitment:field(fd,"commitment"), quittingRisks:multi(fd,"quittingRisks"), yearResults:multi(fd,"yearResults")
     };
-    if(!data.name || !data.email || !data.field || data.goals.length===0){
-      setMessage({type:"error",text:"Vui lòng hoàn thành các câu hỏi bắt buộc trước khi tiếp tục."});
+    if(!data.name || !data.email || !data.field){
+      setSurveyPage(1);
+      setMessage({type:"error",text:"Vui lòng hoàn thành Họ tên, Email và Lĩnh vực trước khi tiếp tục."});
+      return;
+    }
+    if(!/^\\S+@\\S+\\.\\S+$/.test(data.email)){
+      setSurveyPage(1);
+      setMessage({type:"error",text:"Email chưa đúng định dạng. Anh/chị vui lòng kiểm tra lại."});
+      return;
+    }
+    if(data.goals.length===0){
+      setSurveyPage(2);
+      setMessage({type:"error",text:"Vui lòng chọn ít nhất 1 mục tiêu xây kênh ở câu 6."});
       return;
     }
     setSurvey(data); setMessage(null); setStep("booking");
@@ -90,13 +101,13 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
       <div className="progress-track"><div className="progress-fill" style={{width:String(surveyPage*20)+"%"}}/></div>
     </div>
 
-    <form action={completeSurvey}>
+    <form noValidate onSubmit={(e)=>{e.preventDefault();completeSurvey(new FormData(e.currentTarget));}}>
       <div hidden={surveyPage!==1}>
-        <Q n={1}><label>Họ và tên *</label><input name="name" required placeholder="Nguyễn Văn A"/></Q>
-        <Q n={2}><label>Email *</label><input name="email" type="email" required placeholder="ban@email.com"/></Q>
+        <Q n={1}><label>Họ và tên *</label><input name="name" placeholder="Nguyễn Văn A"/></Q>
+        <Q n={2}><label>Email *</label><input name="email" type="email" placeholder="ban@email.com"/></Q>
         <Q n={3}><label>Số điện thoại</label><input name="phone" placeholder="09..."/></Q>
         <Q n={4}><label>Lĩnh vực anh/chị đang hoạt động *</label>
-          <select name="field" required defaultValue=""><option value="" disabled>Chọn lĩnh vực</option>{["Kinh doanh/Bán hàng","Marketing/Truyền thông","Giáo dục/Đào tạo","Sức khỏe/Wellness","Làm đẹp","Bất động sản","Tài chính/Bảo hiểm","Công nghệ/IT","Nội thất/Xây dựng","Ô tô","F&B","Dịch vụ chuyên môn","Nghệ thuật/Sáng tạo","Khác"].map(x=><option key={x}>{x}</option>)}</select>
+          <select name="field" defaultValue=""><option value="" disabled>Chọn lĩnh vực</option>{["Kinh doanh/Bán hàng","Marketing/Truyền thông","Giáo dục/Đào tạo","Sức khỏe/Wellness","Làm đẹp","Bất động sản","Tài chính/Bảo hiểm","Công nghệ/IT","Nội thất/Xây dựng","Ô tô","F&B","Dịch vụ chuyên môn","Nghệ thuật/Sáng tạo","Khác"].map(x=><option key={x}>{x}</option>)}</select>
         </Q>
         <Q n={5}><label>Sản phẩm/dịch vụ anh/chị đang cung cấp</label><input name="productName" placeholder="Nếu chưa có, có thể để trống"/></Q>
       </div>
@@ -138,7 +149,7 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
         <button type="button" className="secondary" onClick={back} disabled={surveyPage===1}>← Quay lại</button>
         {surveyPage<5
           ? <button type="button" className="primary nav-primary" onClick={next}>Tiếp tục →</button>
-          : <button className="primary nav-primary">Hoàn thành → Chọn lịch</button>}
+          : <button type="submit" className="primary nav-primary">Hoàn thành → Chọn lịch</button>}
       </div>
     </form>
   </section>;
