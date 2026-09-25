@@ -56,19 +56,37 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
   }
   useEffect(()=>{if(step==="booking") loadSlots(date)},[date,step]);
 
+  useEffect(()=>{
+    if(!formRef.current) return;
+    const form=formRef.current;
+    for(const [name,value] of Object.entries(surveyDraft)){
+      const controls=Array.from(form.querySelectorAll<HTMLInputElement|HTMLSelectElement>(`[name="${name}"]`));
+      for(const control of controls){
+        if(control instanceof HTMLInputElement && control.type==="checkbox"){
+          control.checked=Array.isArray(value) && value.includes(control.value);
+        }else if(!Array.isArray(value) && value!=null){
+          control.value=String(value);
+        }
+      }
+    }
+  },[surveyPage]);
+
   function completeSurvey(fd:FormData){
     const data=mergeSurvey(surveyDraft,collectSurvey(fd));
     if(!data.name || !data.email || !data.field){
+      setSurveyDraft(data);
       setSurveyPage(1);
       setMessage({type:"error",text:"Vui lòng hoàn thành Họ tên, Email và Lĩnh vực trước khi tiếp tục."});
       return;
     }
     if(!/^\\S+@\\S+\\.\\S+$/.test(data.email)){
+      setSurveyDraft(data);
       setSurveyPage(1);
       setMessage({type:"error",text:"Email chưa đúng định dạng. Anh/chị vui lòng kiểm tra lại."});
       return;
     }
     if(data.goals.length===0){
+      setSurveyDraft(data);
       setSurveyPage(2);
       setMessage({type:"error",text:"Vui lòng chọn ít nhất 1 mục tiêu xây kênh ở câu 6."});
       return;
