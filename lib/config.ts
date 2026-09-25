@@ -1,6 +1,6 @@
 export const config = {
   hostName: process.env.HOST_NAME || "Đỗ Mạnh Thành",
-  hostEmail: process.env.HOST_EMAIL || "host@example.com",
+  hostEmail: process.env.HOST_EMAIL || "thanhdm3010@gmail.com",
   hostSlug: process.env.HOST_SLUG || "manhthanh",
   timezone: process.env.HOST_TIMEZONE || "Asia/Bangkok",
   appUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
