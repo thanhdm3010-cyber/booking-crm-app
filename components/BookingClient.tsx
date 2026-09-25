@@ -1,10 +1,32 @@
 "use client";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { thankYouQr } from "@/lib/thankYouQr";
 
 type Slot={start:string;end:string;label:string};
 const field=(fd:FormData,name:string)=>String(fd.get(name)||"");
 const multi=(fd:FormData,name:string)=>fd.getAll(name).map(String);
+
+const collectSurvey=(fd:FormData)=>({
+  name:field(fd,"name"), email:field(fd,"email"), phone:field(fd,"phone"), field:field(fd,"field"),
+  productName:field(fd,"productName"), goals:multi(fd,"goals"), rememberedAs:multi(fd,"rememberedAs"),
+  strengths:multi(fd,"strengths"), customerAges:multi(fd,"customerAges"), customerJobs:multi(fd,"customerJobs"),
+  customerGender:field(fd,"customerGender"), customerAreas:multi(fd,"customerAreas"),
+  customerProblems:multi(fd,"customerProblems"), solutionProblems:multi(fd,"solutionProblems"),
+  customerResults:multi(fd,"customerResults"), differentiation:multi(fd,"differentiation"),
+  experiences:multi(fd,"experiences"), contentPillars:multi(fd,"contentPillars"),
+  dailyTime:field(fd,"dailyTime"), videosPerWeek:field(fd,"videosPerWeek"), postsPerWeek:field(fd,"postsPerWeek"),
+  commitment:field(fd,"commitment"), quittingRisks:multi(fd,"quittingRisks"), yearResults:multi(fd,"yearResults")
+});
+
+const mergeSurvey=(oldData:any,newData:any)=>{
+  const out:any={...oldData};
+  for(const [k,v] of Object.entries(newData)){
+    if(Array.isArray(v)){ if(v.length) out[k]=v; else if(!(k in out)) out[k]=v; }
+    else if(String(v||"").trim()!=="") out[k]=v;
+    else if(!(k in out)) out[k]=v;
+  }
+  return out;
+};
 
 function nextDays(count=7){
   const days=[]; const base=new Date();
@@ -17,6 +39,8 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
   const [step,setStep]=useState<"survey"|"booking">("survey");
   const [surveyPage,setSurveyPage]=useState(1);
   const [survey,setSurvey]=useState<any>(null);
+  const [surveyDraft,setSurveyDraft]=useState<any>({});
+  const formRef=useRef<HTMLFormElement|null>(null);
   const [date,setDate]=useState(days[0].toISOString().slice(0,10));
   const [slots,setSlots]=useState<Slot[]>([]);
   const [selected,setSelected]=useState<Slot|null>(null);
@@ -33,17 +57,7 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
   useEffect(()=>{if(step==="booking") loadSlots(date)},[date,step]);
 
   function completeSurvey(fd:FormData){
-    const data={
-      name:field(fd,"name"), email:field(fd,"email"), phone:field(fd,"phone"), field:field(fd,"field"),
-      productName:field(fd,"productName"), goals:multi(fd,"goals"), rememberedAs:multi(fd,"rememberedAs"),
-      strengths:multi(fd,"strengths"), customerAges:multi(fd,"customerAges"), customerJobs:multi(fd,"customerJobs"),
-      customerGender:field(fd,"customerGender"), customerAreas:multi(fd,"customerAreas"),
-      customerProblems:multi(fd,"customerProblems"), solutionProblems:multi(fd,"solutionProblems"),
-      customerResults:multi(fd,"customerResults"), differentiation:multi(fd,"differentiation"),
-      experiences:multi(fd,"experiences"), contentPillars:multi(fd,"contentPillars"),
-      dailyTime:field(fd,"dailyTime"), videosPerWeek:field(fd,"videosPerWeek"), postsPerWeek:field(fd,"postsPerWeek"),
-      commitment:field(fd,"commitment"), quittingRisks:multi(fd,"quittingRisks"), yearResults:multi(fd,"yearResults")
-    };
+    const data=mergeSurvey(surveyDraft,collectSurvey(fd));
     if(!data.name || !data.email || !data.field){
       setSurveyPage(1);
       setMessage({type:"error",text:"Vui lòng hoàn thành Họ tên, Email và Lĩnh vực trước khi tiếp tục."});
@@ -89,8 +103,32 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
     <div className="question"><div className="qnumber">{n}</div><div className="qbody">{children}</div></div>;
 
   const scrollSurveyTop=()=>{window.requestAnimationFrame(()=>window.scrollTo({top:0,behavior:"smooth"}))};
-  const next=()=>{setMessage(null);setSurveyPage(p=>Math.min(5,p+1));scrollSurveyTop()};
-  const back=()=>{setMessage(null);setSurveyPage(p=>Math.max(1,p-1));scrollSurveyTop()};
+  const next=()=>{
+    if(!formRef.current) return;
+    const data=mergeSurvey(surveyDraft,collectSurvey(new FormData(formRef.current)));
+    if(surveyPage===1){
+      if(!data.name || !data.email || !data.field){
+        setMessage({type:"error",text:"Vui lòng hoàn thành Họ tên, Email và Lĩnh vực trước khi tiếp tục."});
+        scrollSurveyTop(); return;
+      }
+      if(!/^\S+@\S+\.\S+$/.test(data.email)){
+        setMessage({type:"error",text:"Email chưa đúng định dạng. Anh/chị vui lòng kiểm tra lại."});
+        scrollSurveyTop(); return;
+      }
+    }
+    if(surveyPage===2 && data.goals.length===0){
+      setMessage({type:"error",text:"Vui lòng chọn ít nhất 1 mục tiêu xây kênh ở câu 6."});
+      scrollSurveyTop(); return;
+    }
+    setSurveyDraft(data);
+    setMessage(null);
+    setSurveyPage(p=>Math.min(5,p+1));
+    scrollSurveyTop();
+  };
+  const back=()=>{
+    if(formRef.current) setSurveyDraft(d=>mergeSurvey(d,collectSurvey(new FormData(formRef.current))));
+    setMessage(null);setSurveyPage(p=>Math.max(1,p-1));scrollSurveyTop()
+  };
   const rangeText=surveyPage<5 ? "Câu "+(((surveyPage-1)*5)+1)+"–"+(surveyPage*5) : "Câu 21–24";
 
   if(bookingComplete) return <section className="card thankyou-card">
@@ -138,7 +176,7 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
       <div className="progress-track"><div className="progress-fill" style={{width:String(surveyPage*20)+"%"}}/></div>
     </div>
 
-    <form noValidate onSubmit={(e)=>{e.preventDefault();completeSurvey(new FormData(e.currentTarget));}}>
+    <form ref={formRef} noValidate onSubmit={(e)=>{e.preventDefault();completeSurvey(new FormData(e.currentTarget));}}>
       <div hidden={surveyPage!==1}>
         <Q n={1}><label>Họ và tên *</label><input name="name" placeholder="Nguyễn Văn A"/></Q>
         <Q n={2}><label>Email *</label><input name="email" type="email" placeholder="ban@email.com"/></Q>
