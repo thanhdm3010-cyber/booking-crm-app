@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { thankYouQr } from "@/lib/thankYouQr";
+import { brandLogo } from "@/lib/brandAssets";
 
 type Slot={start:string;end:string;label:string};
+const lunchQrUrl="https://img.vietqr.io/image/970407-19074528114010-compact2.png?amount=89000&addInfo=moi%20Thanh%20bua%20trua&accountName=DO%20MANH%20THANH";
 
 function SurveyQuestion({n,children}:{n:number;children:ReactNode}){
   return <div className="question"><div className="qnumber">{n}</div><div className="qbody">{children}</div></div>;
@@ -132,35 +133,35 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
   const back=()=>{setMessage(null);setSurveyPage(p=>Math.max(1,p-1));scrollSurveyTop()};
   const rangeText=surveyPage<5 ? "Câu "+(((surveyPage-1)*5)+1)+"–"+(surveyPage*5) : "Câu 21–24";
 
-  if(bookingComplete) return <section className="card thankyou-card">
-    <div className="thankyou-icon">✓</div>
-    <div className="eyebrow">Đặt lịch thành công</div>
-    <h2>Cảm ơn anh/chị đã đặt lịch thành công</h2>
-    <p className="thankyou-copy">
-      Thành đã nhận được thông tin của anh/chị. Trước buổi coaching, anh/chị vui lòng chuẩn bị trước
-      những thông tin quan trọng, vấn đề đang gặp phải và các câu hỏi muốn trao đổi, để buổi coaching
-      đi đúng trọng tâm, tiết kiệm thời gian và mang lại giá trị thực tế nhất.
-    </p>
+  if(bookingComplete) return <section className="card thankyou-card thankyou-visual">
+    <div className="thankyou-brand">
+      <img src={brandLogo} alt="ANLIFE - Kiến tạo giá trị sống" />
+    </div>
 
-    <div className="lunch-box">
-      <div className="lunch-copy">
+    <div className="thankyou-layout">
+      <div className="thankyou-message">
         <div className="lunch-badge">Một lời động viên nhỏ 💚</div>
-        <h3>Mời Thành một bữa trưa nhé!</h3>
+        <h2>Mời Thành một bữa trưa nhé!</h2>
+        <h3>Cảm ơn anh/chị đã đặt lịch thành công.</h3>
+        <p>
+          Thành đã nhận được thông tin của anh/chị. Trước buổi coaching, anh/chị vui lòng chuẩn bị trước
+          những thông tin quan trọng, vấn đề đang gặp phải và các câu hỏi muốn trao đổi, để buổi coaching
+          đi đúng trọng tâm, tiết kiệm thời gian và mang lại giá trị thực tế nhất.
+        </p>
         <p>
           Nếu anh/chị thấy những chia sẻ và buổi coaching cùng Thành hữu ích, anh/chị có thể gửi Thành
-          một lời động viên nhỏ qua mã QR bên dưới.
+          một lời động viên nhỏ qua mã QR bên cạnh.
         </p>
+
         <div className="amount">89.000đ</div>
-        <div className="bank-info">
-          <span><strong>Techcombank</strong></span>
-          <span>Đỗ Mạnh Thành</span>
-          <span>1907 4528 1140 10</span>
-        </div>
         <p className="tiny-note">Anh/chị có thể bỏ qua phần này và vẫn tham gia buổi coaching như bình thường.</p>
       </div>
-      <div className="qr-wrap">
-        <img src={thankYouQr} alt="QR chuyển khoản Techcombank cho Đỗ Mạnh Thành" />
-        <span>Quét QR để mời Thành bữa trưa</span>
+
+      <div className="thankyou-payment">
+        <div className="payment-heading">Quét mã để chuyển tiền đến</div>
+        <strong>ĐỖ MẠNH THÀNH</strong>
+        <div className="account-number">1907 4528 1140 10</div>
+        <img className="vietqr-image" src={lunchQrUrl} alt="VietQR Techcombank - Đỗ Mạnh Thành - 89.000 đồng" />
       </div>
     </div>
   </section>;
