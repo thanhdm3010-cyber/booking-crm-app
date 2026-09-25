@@ -14,7 +14,7 @@ export async function POST(request: Request) {
       await sendReminder({ customerEmail: b.customerEmail, customerName: b.customerName, hostName: b.hostName, start: b.start, meetUrl: b.meetUrl, kind: "24h" });
       await updateBooking(b.id, { reminder24hSentAt: new Date().toISOString() }); sent++;
     }
-    if (diffH > 0.5 && diffH <= 1.5 && !b.reminder1hSentAt) {
+    if (diffH >= 0.75 && diffH <= 1.25 && !b.reminder1hSentAt) {
       await sendReminder({ customerEmail: b.customerEmail, customerName: b.customerName, hostName: b.hostName, start: b.start, meetUrl: b.meetUrl, kind: "1h" });
       await updateBooking(b.id, { reminder1hSentAt: new Date().toISOString() }); sent++;
     }
