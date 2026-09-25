@@ -141,3 +141,32 @@ th, td { border-bottom:1px solid var(--line); padding:12px; text-align:left; fon
   .bank-info{align-items:center}
   .qr-wrap img{max-width:300px}
 }
+
+/* Thank-you payment card */
+.thankyou-visual{max-width:1080px;padding:30px;background:linear-gradient(135deg,#fffdf8 0%,#ffffff 55%,#fff8e8 100%);border-color:#efe1bd}
+.thankyou-brand{display:flex;align-items:center;margin-bottom:20px}
+.thankyou-brand img{width:230px;max-width:62vw;height:auto;display:block}
+.thankyou-layout{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:stretch}
+.thankyou-message,.thankyou-payment{border:1px solid #eee3c9;border-radius:24px;background:rgba(255,255,255,.94);padding:28px}
+.thankyou-message{text-align:left}
+.thankyou-message h2{font-size:36px;line-height:1.15;margin:14px 0 14px;color:#10233f}
+.thankyou-message h3{font-size:20px;margin:0 0 14px;color:#10233f}
+.thankyou-message p{font-size:16px;line-height:1.72;color:#526174;margin:0 0 16px}
+.thankyou-message .amount{font-size:48px;line-height:1;font-weight:900;color:#0f4c81;margin:18px 0}
+.thankyou-message .tiny-note{font-size:13px!important;color:#768297!important;margin-top:14px!important}
+.thankyou-payment{text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+.payment-heading{font-size:18px;color:#26384f;margin-bottom:8px}
+.thankyou-payment>strong{font-size:24px;color:#111827}
+.account-number{font-size:19px;margin:6px 0 18px;color:#26384f}
+.vietqr-image{width:100%;max-width:430px;height:auto;display:block;border-radius:18px;background:#fff;image-rendering:auto}
+@media(max-width:760px){
+  .thankyou-visual{padding:18px}
+  .thankyou-layout{grid-template-columns:1fr;gap:16px}
+  .thankyou-message,.thankyou-payment{padding:20px;border-radius:18px}
+  .thankyou-message h2{font-size:30px}
+  .thankyou-message h3{font-size:18px}
+  .thankyou-message p{font-size:15px}
+  .thankyou-message .amount{font-size:42px}
+  .thankyou-brand img{width:190px}
+  .vietqr-image{max-width:360px}
+}
