@@ -154,10 +154,6 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
         <div className="success-check">✓</div>
         <div><strong>Đặt lịch thành công!</strong><span>Thông tin chi tiết đã được gửi tới email của anh/chị.</span></div>
       </div>
-    <div className="thankyou-brand">
-      <img src={brandLogo} alt="ANLIFE - Kiến tạo giá trị sống" />
-    </div>
-
     <div className="thankyou-layout">
       <div className="thankyou-message">
         <div className="thankyou-person">
