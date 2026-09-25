@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { config } from "./config";
+import { bookingWorkbookFilename, createBookingWorkbook } from "./excel";
 
 function mailer() {
   const apiKey = process.env.RESEND_API_KEY;
@@ -18,6 +19,7 @@ function zoomBlock(url?: string | null) {
 export async function sendBookingEmails(input: {
   manageToken: string; hostName: string; hostEmail: string; customerName: string; customerEmail: string;
   start: string; end: string; meetUrl?: string | null; note?: string;
+  customerPhone?: string; surveyData?: Record<string,unknown>; source?: string; campaign?: string;
 }) {
   const resend = mailer();
   if (!resend) return { skipped: true };
@@ -42,6 +44,20 @@ export async function sendBookingEmails(input: {
     console.log("Customer booking email sent", { to: input.customerEmail, id: customerResult.data?.id });
   }
 
+  const workbook = await createBookingWorkbook({
+    customerName: input.customerName,
+    customerEmail: input.customerEmail,
+    customerPhone: input.customerPhone,
+    start: input.start,
+    end: input.end,
+    status: "confirmed",
+    source: input.source,
+    campaign: input.campaign,
+    meetUrl: input.meetUrl,
+    note: input.note,
+    surveyData: input.surveyData
+  });
+
   const hostResult = await resend.emails.send({
     from: from(),
     to: hostRecipient,
@@ -50,9 +66,14 @@ export async function sendBookingEmails(input: {
       <h2>Bạn có một lịch hẹn mới</h2>
       <p><strong>Khách:</strong> ${input.customerName}</p>
       <p><strong>Email:</strong> ${input.customerEmail}</p>
-      <p><strong>Điện thoại:</strong> ${(input as any).customerPhone || "Không có"}</p>
+      <p><strong>Điện thoại:</strong> ${input.customerPhone || "Không có"}</p>
       <p><strong>Thời gian:</strong> ${fmt(input.start)}</p>
-      <p><strong>Nội dung:</strong> ${input.note || "Không có"}</p>${zoom}`
+      <p><strong>Nội dung:</strong> ${input.note || "Không có"}</p>
+      <p>File Excel đính kèm chứa toàn bộ thông tin booking và câu trả lời khảo sát của khách.</p>${zoom}`,
+    attachments: [{
+      filename: bookingWorkbookFilename(input.customerName,input.start),
+      content: workbook
+    }]
   });
 
   if (hostResult.error) {
