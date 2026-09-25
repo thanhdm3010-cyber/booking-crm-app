@@ -8,6 +8,13 @@ function mailer() {
 const from = () => process.env.EMAIL_FROM || "Booking App <onboarding@resend.dev>";
 const fmt = (iso: string) => new Date(iso).toLocaleString("vi-VN", { timeZone: config.timezone, dateStyle: "full", timeStyle: "short" });
 
+function zoomBlock(url?: string | null) {
+  const link = url || config.zoomUrl;
+  return `<p><strong>Tham dự qua Zoom:</strong> <a href="${link}">${link}</a></p>
+  <p><strong>Meeting ID:</strong> ${config.zoomMeetingId}<br/>
+  <strong>Passcode:</strong> ${config.zoomPasscode}</p>`;
+}
+
 export async function sendBookingEmails(input: {
   manageToken: string; hostName: string; hostEmail: string; customerName: string; customerEmail: string;
   start: string; end: string; meetUrl?: string | null; note?: string;
@@ -15,17 +22,17 @@ export async function sendBookingEmails(input: {
   const resend = mailer();
   if (!resend) return { skipped: true };
   const manageUrl = `${config.appUrl}/manage/${input.manageToken}`;
-  const meet = input.meetUrl ? `<p><strong>Google Meet:</strong> <a href="${input.meetUrl}">${input.meetUrl}</a></p>` : "";
+  const zoom = zoomBlock(input.meetUrl);
   await Promise.all([
     resend.emails.send({ from: from(), to: input.customerEmail, subject: `Xác nhận lịch hẹn với ${input.hostName}`, html: `
       <h2>Đặt lịch thành công</h2><p>Xin chào ${input.customerName},</p>
       <p>Lịch hẹn của bạn với <strong>${input.hostName}</strong> đã được xác nhận.</p>
-      <p><strong>Thời gian:</strong> ${fmt(input.start)}</p>${meet}
+      <p><strong>Thời gian:</strong> ${fmt(input.start)}</p>${zoom}
       <p><a href="${manageUrl}">Đổi hoặc hủy lịch</a></p>` }),
     resend.emails.send({ from: from(), to: input.hostEmail, subject: `Lịch hẹn mới: ${input.customerName}`, html: `
       <h2>Bạn có một lịch hẹn mới</h2><p><strong>Khách:</strong> ${input.customerName}</p>
       <p><strong>Email:</strong> ${input.customerEmail}</p><p><strong>Thời gian:</strong> ${fmt(input.start)}</p>
-      <p><strong>Nội dung:</strong> ${input.note || "Không có"}</p>${meet}` })
+      <p><strong>Nội dung:</strong> ${input.note || "Không có"}</p>${zoom}` })
   ]);
   return { skipped: false };
 }
@@ -36,7 +43,7 @@ export async function sendReminder(input: { customerEmail: string; customerName:
   await resend.emails.send({
     from: from(), to: input.customerEmail,
     subject: `Nhắc lịch hẹn ${input.kind === "24h" ? "ngày mai" : "sắp bắt đầu"}`,
-    html: `<p>Xin chào ${input.customerName},</p><p>Đây là lời nhắc lịch hẹn với <strong>${input.hostName}</strong>.</p><p><strong>Thời gian:</strong> ${fmt(input.start)}</p>${input.meetUrl ? `<p><a href="${input.meetUrl}">Vào Google Meet</a></p>` : ""}`
+    html: `<p>Xin chào ${input.customerName},</p><p>Đây là lời nhắc lịch hẹn với <strong>${input.hostName}</strong>.</p><p><strong>Thời gian:</strong> ${fmt(input.start)}</p>${zoomBlock(input.meetUrl)}`
   });
   return { skipped: false };
 }
