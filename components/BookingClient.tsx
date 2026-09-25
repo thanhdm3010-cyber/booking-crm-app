@@ -69,7 +69,23 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
         }
       }
     }
-  },[surveyPage]);
+  },[surveyPage,surveyDraft]);
+
+  const rememberAnswer=(e:React.ChangeEvent<HTMLFormElement>)=>{
+    const target=e.target as HTMLInputElement|HTMLSelectElement;
+    if(!target.name) return;
+    setSurveyDraft((prev:any)=>{
+      const next={...prev};
+      if(target instanceof HTMLInputElement && target.type==="checkbox"){
+        const current=new Set<string>(Array.isArray(prev[target.name])?prev[target.name]:[]);
+        if(target.checked) current.add(target.value); else current.delete(target.value);
+        next[target.name]=Array.from(current);
+      }else{
+        next[target.name]=target.value;
+      }
+      return next;
+    });
+  };
 
   function completeSurvey(fd:FormData){
     const data=mergeSurvey(surveyDraft,collectSurvey(fd));
@@ -79,7 +95,7 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
       setMessage({type:"error",text:"Vui lòng hoàn thành Họ tên, Email và Lĩnh vực trước khi tiếp tục."});
       return;
     }
-    if(!/^\\S+@\\S+\\.\\S+$/.test(data.email)){
+    if(!/^\S+@\S+\.\S+$/.test(data.email)){
       setSurveyDraft(data);
       setSurveyPage(1);
       setMessage({type:"error",text:"Email chưa đúng định dạng. Anh/chị vui lòng kiểm tra lại."});
@@ -194,7 +210,7 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
       <div className="progress-track"><div className="progress-fill" style={{width:String(surveyPage*20)+"%"}}/></div>
     </div>
 
-    <form ref={formRef} noValidate onSubmit={(e)=>{e.preventDefault();completeSurvey(new FormData(e.currentTarget));}}>
+    <form ref={formRef} noValidate onChange={rememberAnswer} onSubmit={(e)=>{e.preventDefault();completeSurvey(new FormData(e.currentTarget));}}>
       <div hidden={surveyPage!==1}>
         <Q n={1}><label>Họ và tên *</label><input name="name" placeholder="Nguyễn Văn A"/></Q>
         <Q n={2}><label>Email *</label><input name="email" type="email" placeholder="ban@email.com"/></Q>
