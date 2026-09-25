@@ -2,7 +2,7 @@ import "./styles.css";
 import type { ReactNode } from "react";
 
 export const metadata = {
-  title: "Booking MVP",
+  title: "Đặt lịch coaching cùng Đỗ Mạnh Thành",
   description: "Đặt lịch tư vấn nhanh"
 };
 
