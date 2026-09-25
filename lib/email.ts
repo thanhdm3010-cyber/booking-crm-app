@@ -23,18 +23,50 @@ export async function sendBookingEmails(input: {
   if (!resend) return { skipped: true };
   const manageUrl = `${config.appUrl}/manage/${input.manageToken}`;
   const zoom = zoomBlock(input.meetUrl);
-  await Promise.all([
-    resend.emails.send({ from: from(), to: input.customerEmail, subject: `Xác nhận lịch hẹn với ${input.hostName}`, html: `
+  const hostRecipient = input.hostEmail || "thanhdm3010@gmail.com";
+
+  const customerResult = await resend.emails.send({
+    from: from(),
+    to: input.customerEmail,
+    subject: `Xác nhận lịch hẹn với ${input.hostName}`,
+    html: `
       <h2>Đặt lịch thành công</h2><p>Xin chào ${input.customerName},</p>
       <p>Lịch hẹn của bạn với <strong>${input.hostName}</strong> đã được xác nhận.</p>
       <p><strong>Thời gian:</strong> ${fmt(input.start)}</p>${zoom}
-      <p><a href="${manageUrl}">Đổi hoặc hủy lịch</a></p>` }),
-    resend.emails.send({ from: from(), to: input.hostEmail, subject: `Lịch hẹn mới: ${input.customerName}`, html: `
-      <h2>Bạn có một lịch hẹn mới</h2><p><strong>Khách:</strong> ${input.customerName}</p>
-      <p><strong>Email:</strong> ${input.customerEmail}</p><p><strong>Thời gian:</strong> ${fmt(input.start)}</p>
-      <p><strong>Nội dung:</strong> ${input.note || "Không có"}</p>${zoom}` })
-  ]);
-  return { skipped: false };
+      <p><a href="${manageUrl}">Đổi hoặc hủy lịch</a></p>`
+  });
+
+  if (customerResult.error) {
+    console.error("Customer booking email failed", customerResult.error);
+  } else {
+    console.log("Customer booking email sent", { to: input.customerEmail, id: customerResult.data?.id });
+  }
+
+  const hostResult = await resend.emails.send({
+    from: from(),
+    to: hostRecipient,
+    subject: `Lịch hẹn mới: ${input.customerName}`,
+    html: `
+      <h2>Bạn có một lịch hẹn mới</h2>
+      <p><strong>Khách:</strong> ${input.customerName}</p>
+      <p><strong>Email:</strong> ${input.customerEmail}</p>
+      <p><strong>Điện thoại:</strong> ${(input as any).customerPhone || "Không có"}</p>
+      <p><strong>Thời gian:</strong> ${fmt(input.start)}</p>
+      <p><strong>Nội dung:</strong> ${input.note || "Không có"}</p>${zoom}`
+  });
+
+  if (hostResult.error) {
+    console.error("Host booking email failed", hostResult.error);
+  } else {
+    console.log("Host booking email sent", { to: hostRecipient, id: hostResult.data?.id });
+  }
+
+  return {
+    skipped: false,
+    customer: customerResult.data?.id || null,
+    host: hostResult.data?.id || null,
+    hostRecipient
+  };
 }
 
 export async function sendReminder(input: { customerEmail: string; customerName: string; hostName: string; start: string; meetUrl?: string | null; kind: "24h" | "1h" }) {
