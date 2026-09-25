@@ -4,6 +4,10 @@ import { thankYouQr } from "@/lib/thankYouQr";
 
 type Slot={start:string;end:string;label:string};
 
+function SurveyQuestion({n,children}:{n:number;children:ReactNode}){
+  return <div className="question"><div className="qnumber">{n}</div><div className="qbody">{children}</div></div>;
+}
+
 function nextDays(count=7){
   const days=[]; const base=new Date();
   for(let i=1;i<=count;i++){const d=new Date(base);d.setDate(base.getDate()+i);days.push(d)}
@@ -89,9 +93,6 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
   const CheckboxGroup=({name,options}:{name:string;options:string[]})=>
     <div className="checkgrid">{options.map(o=><label className="check" key={o}><input type="checkbox" name={name} value={o} checked={values(name).includes(o)} onChange={e=>toggle(name,o,e.target.checked)}/><span>{o}</span></label>)}</div>;
 
-  const Q=({n,children}:{n:number;children:ReactNode})=>
-    <div className="question"><div className="qnumber">{n}</div><div className="qbody">{children}</div></div>;
-
   const scrollSurveyTop=()=>{window.requestAnimationFrame(()=>window.scrollTo({top:0,behavior:"smooth"}))};
   const next=()=>{
     if(surveyPage===1){
@@ -162,44 +163,44 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
 
     <div>
       <div hidden={surveyPage!==1}>
-        <Q n={1}><label>Họ và tên *</label><input name="name" placeholder="Nguyễn Văn A" value={textValue("name")} onChange={e=>setText("name",e.target.value)}/></Q>
-        <Q n={2}><label>Email *</label><input name="email" type="email" placeholder="ban@email.com" value={textValue("email")} onChange={e=>setText("email",e.target.value)}/></Q>
-        <Q n={3}><label>Số điện thoại</label><input name="phone" placeholder="09..." value={textValue("phone")} onChange={e=>setText("phone",e.target.value)}/></Q>
-        <Q n={4}><label>Lĩnh vực anh/chị đang hoạt động *</label>
+        <SurveyQuestion n={1}><label>Họ và tên *</label><input name="name" placeholder="Nguyễn Văn A" value={textValue("name")} onChange={e=>setText("name",e.target.value)}/></SurveyQuestion>
+        <SurveyQuestion n={2}><label>Email *</label><input name="email" type="email" placeholder="ban@email.com" value={textValue("email")} onChange={e=>setText("email",e.target.value)}/></SurveyQuestion>
+        <SurveyQuestion n={3}><label>Số điện thoại</label><input name="phone" placeholder="09..." value={textValue("phone")} onChange={e=>setText("phone",e.target.value)}/></SurveyQuestion>
+        <SurveyQuestion n={4}><label>Lĩnh vực anh/chị đang hoạt động *</label>
           <select name="field" value={textValue("field")} onChange={e=>setText("field",e.target.value)}><option value="" disabled>Chọn lĩnh vực</option>{["Kinh doanh/Bán hàng","Marketing/Truyền thông","Giáo dục/Đào tạo","Sức khỏe/Wellness","Làm đẹp","Bất động sản","Tài chính/Bảo hiểm","Công nghệ/IT","Nội thất/Xây dựng","Ô tô","F&B","Dịch vụ chuyên môn","Nghệ thuật/Sáng tạo","Khác"].map(x=><option key={x}>{x}</option>)}</select>
-        </Q>
-        <Q n={5}><label>Sản phẩm/dịch vụ anh/chị đang cung cấp</label><input name="productName" placeholder="Nếu chưa có, có thể để trống" value={textValue("productName")} onChange={e=>setText("productName",e.target.value)}/></Q>
+        </SurveyQuestion>
+        <SurveyQuestion n={5}><label>Sản phẩm/dịch vụ anh/chị đang cung cấp</label><input name="productName" placeholder="Nếu chưa có, có thể để trống" value={textValue("productName")} onChange={e=>setText("productName",e.target.value)}/></SurveyQuestion>
       </div>
 
       <div hidden={surveyPage!==2}>
-        <Q n={6}><label>Anh/chị muốn xây kênh để đạt mục tiêu gì? *</label><CheckboxGroup name="goals" options={["Xây thương hiệu cá nhân","Tìm kiếm khách hàng","Bán sản phẩm/dịch vụ","Tăng uy tín chuyên gia","Chia sẻ kiến thức","Xây cộng đồng","Phát triển sự nghiệp","Tạo thêm nguồn thu"]}/></Q>
-        <Q n={7}><label>Anh/chị muốn được mọi người nhớ đến là người như thế nào?</label><CheckboxGroup name="rememberedAs" options={["Chuyên gia","Đáng tin cậy","Tận tâm","Thực tế","Truyền cảm hứng","Sáng tạo","Có chiều sâu","Kỷ luật","Tử tế","Khác"]}/></Q>
-        <Q n={8}><label>Anh/chị có thể giúp người khác tốt hơn ở điều gì?</label><CheckboxGroup name="strengths" options={["Kiến thức chuyên môn","Kinh nghiệm thực tế","Giải quyết vấn đề","Hướng dẫn từng bước","Truyền động lực","Tư duy/định hướng","Kỹ năng nghề nghiệp","Kết nối nguồn lực","Khác"]}/></Q>
-        <Q n={9}><label>Độ tuổi nhóm người anh/chị muốn phục vụ</label><CheckboxGroup name="customerAges" options={["Dưới 18","18–24","25–34","35–44","45–54","55+"]}/></Q>
-        <Q n={10}><label>Nghề nghiệp của nhóm người anh/chị muốn phục vụ</label><CheckboxGroup name="customerJobs" options={["Học sinh/Sinh viên","Nhân viên văn phòng","Chuyên gia","Freelancer","Chủ kinh doanh","Chủ doanh nghiệp","Quản lý/Lãnh đạo","Nội trợ","Khác"]}/></Q>
+        <SurveyQuestion n={6}><label>Anh/chị muốn xây kênh để đạt mục tiêu gì? *</label><CheckboxGroup name="goals" options={["Xây thương hiệu cá nhân","Tìm kiếm khách hàng","Bán sản phẩm/dịch vụ","Tăng uy tín chuyên gia","Chia sẻ kiến thức","Xây cộng đồng","Phát triển sự nghiệp","Tạo thêm nguồn thu"]}/></SurveyQuestion>
+        <SurveyQuestion n={7}><label>Anh/chị muốn được mọi người nhớ đến là người như thế nào?</label><CheckboxGroup name="rememberedAs" options={["Chuyên gia","Đáng tin cậy","Tận tâm","Thực tế","Truyền cảm hứng","Sáng tạo","Có chiều sâu","Kỷ luật","Tử tế","Khác"]}/></SurveyQuestion>
+        <SurveyQuestion n={8}><label>Anh/chị có thể giúp người khác tốt hơn ở điều gì?</label><CheckboxGroup name="strengths" options={["Kiến thức chuyên môn","Kinh nghiệm thực tế","Giải quyết vấn đề","Hướng dẫn từng bước","Truyền động lực","Tư duy/định hướng","Kỹ năng nghề nghiệp","Kết nối nguồn lực","Khác"]}/></SurveyQuestion>
+        <SurveyQuestion n={9}><label>Độ tuổi nhóm người anh/chị muốn phục vụ</label><CheckboxGroup name="customerAges" options={["Dưới 18","18–24","25–34","35–44","45–54","55+"]}/></SurveyQuestion>
+        <SurveyQuestion n={10}><label>Nghề nghiệp của nhóm người anh/chị muốn phục vụ</label><CheckboxGroup name="customerJobs" options={["Học sinh/Sinh viên","Nhân viên văn phòng","Chuyên gia","Freelancer","Chủ kinh doanh","Chủ doanh nghiệp","Quản lý/Lãnh đạo","Nội trợ","Khác"]}/></SurveyQuestion>
       </div>
 
       <div hidden={surveyPage!==3}>
-        <Q n={11}><label>Giới tính của nhóm người anh/chị muốn phục vụ</label><select name="customerGender" value={textValue("customerGender")||"Cả nam và nữ"} onChange={e=>setText("customerGender",e.target.value)}><option>Cả nam và nữ</option><option>Nam</option><option>Nữ</option><option>Không xác định cụ thể</option></select></Q>
-        <Q n={12}><label>Khu vực sinh sống của nhóm người anh/chị muốn phục vụ</label><CheckboxGroup name="customerAreas" options={["Hà Nội","TP.HCM","Các tỉnh/thành khác","Toàn quốc","Việt Nam ở nước ngoài","Quốc tế"]}/></Q>
-        <Q n={13}><label>Nhóm người anh/chị muốn phục vụ đang gặp vấn đề lớn nhất nào?</label><CheckboxGroup name="customerProblems" options={["Thiếu kiến thức","Thiếu kỹ năng","Thiếu thời gian","Thiếu nguồn lực","Thiếu khách hàng","Không biết bắt đầu từ đâu","Không duy trì được","Thiếu tự tin","Chưa tìm được giải pháp phù hợp","Khác"]}/></Q>
-        <Q n={14}><label>Sản phẩm/dịch vụ của anh/chị giải quyết nhóm vấn đề nào?</label><CheckboxGroup name="solutionProblems" options={["Tăng doanh thu","Tiết kiệm thời gian","Giảm chi phí","Cải thiện sức khỏe","Phát triển kỹ năng","Phát triển sự nghiệp","Nâng cao hiệu suất","Giải quyết vấn đề chuyên môn","Khác"]}/></Q>
-        <Q n={15}><label>Kết quả anh/chị muốn giúp họ đạt được là gì?</label><CheckboxGroup name="customerResults" options={["Có kiến thức rõ ràng hơn","Có quy trình cụ thể","Tiết kiệm thời gian","Tăng doanh thu","Có thêm khách hàng","Tăng năng suất","Tăng sự tự tin","Có kết quả đo lường được","Khác"]}/></Q>
+        <SurveyQuestion n={11}><label>Giới tính của nhóm người anh/chị muốn phục vụ</label><select name="customerGender" value={textValue("customerGender")||"Cả nam và nữ"} onChange={e=>setText("customerGender",e.target.value)}><option>Cả nam và nữ</option><option>Nam</option><option>Nữ</option><option>Không xác định cụ thể</option></select></SurveyQuestion>
+        <SurveyQuestion n={12}><label>Khu vực sinh sống của nhóm người anh/chị muốn phục vụ</label><CheckboxGroup name="customerAreas" options={["Hà Nội","TP.HCM","Các tỉnh/thành khác","Toàn quốc","Việt Nam ở nước ngoài","Quốc tế"]}/></SurveyQuestion>
+        <SurveyQuestion n={13}><label>Nhóm người anh/chị muốn phục vụ đang gặp vấn đề lớn nhất nào?</label><CheckboxGroup name="customerProblems" options={["Thiếu kiến thức","Thiếu kỹ năng","Thiếu thời gian","Thiếu nguồn lực","Thiếu khách hàng","Không biết bắt đầu từ đâu","Không duy trì được","Thiếu tự tin","Chưa tìm được giải pháp phù hợp","Khác"]}/></SurveyQuestion>
+        <SurveyQuestion n={14}><label>Sản phẩm/dịch vụ của anh/chị giải quyết nhóm vấn đề nào?</label><CheckboxGroup name="solutionProblems" options={["Tăng doanh thu","Tiết kiệm thời gian","Giảm chi phí","Cải thiện sức khỏe","Phát triển kỹ năng","Phát triển sự nghiệp","Nâng cao hiệu suất","Giải quyết vấn đề chuyên môn","Khác"]}/></SurveyQuestion>
+        <SurveyQuestion n={15}><label>Kết quả anh/chị muốn giúp họ đạt được là gì?</label><CheckboxGroup name="customerResults" options={["Có kiến thức rõ ràng hơn","Có quy trình cụ thể","Tiết kiệm thời gian","Tăng doanh thu","Có thêm khách hàng","Tăng năng suất","Tăng sự tự tin","Có kết quả đo lường được","Khác"]}/></SurveyQuestion>
       </div>
 
       <div hidden={surveyPage!==4}>
-        <Q n={16}><label>Điểm khác biệt của anh/chị là gì?</label><CheckboxGroup name="differentiation" options={["Nhiều năm kinh nghiệm","Có kết quả thực tế","Có phương pháp riêng","Có câu chuyện cá nhân","Chuyên môn sâu","Dịch vụ tận tâm","Hiểu khách hàng","Có cộng đồng","Có hệ thống/quy trình","Phong cách cá nhân khác biệt","Khác"]}/></Q>
-        <Q n={17}><label>Trải nghiệm nào có thể trở thành chất liệu xây kênh?</label><CheckboxGroup name="experiences" options={["Từng thất bại","Từng mất phương hướng","Từng thay đổi nghề nghiệp","Từng vượt qua khó khăn","Từng khởi nghiệp","Từng xây lại từ đầu","Từng đạt thành tựu nổi bật","Có nhiều case khách hàng","Chưa xác định được"]}/></Q>
-        <Q n={18}><label>Anh/chị muốn xây dựng nhóm nội dung nào?</label><CheckboxGroup name="contentPillars" options={["Chuyên môn","Case study","Câu chuyện cá nhân","Tư duy/phát triển bản thân","Hướng dẫn thực hành","Giải đáp câu hỏi","Phân tích xu hướng","Review công cụ/sản phẩm","Quan điểm cá nhân","Lifestyle gắn chuyên môn"]}/></Q>
-        <Q n={19}><label>Thời gian có thể dành mỗi ngày</label><select name="dailyTime" value={textValue("dailyTime")||"Dưới 30 phút"} onChange={e=>setText("dailyTime",e.target.value)}>{["Dưới 30 phút","30–60 phút","1–2 giờ","2–3 giờ","Trên 3 giờ"].map(x=><option key={x}>{x}</option>)}</select></Q>
-        <Q n={20}><label>Số video có thể thực hiện mỗi tuần</label><select name="videosPerWeek" value={textValue("videosPerWeek")||"1"} onChange={e=>setText("videosPerWeek",e.target.value)}>{["1","2–3","4–5","6–7","Trên 7"].map(x=><option key={x}>{x}</option>)}</select></Q>
+        <SurveyQuestion n={16}><label>Điểm khác biệt của anh/chị là gì?</label><CheckboxGroup name="differentiation" options={["Nhiều năm kinh nghiệm","Có kết quả thực tế","Có phương pháp riêng","Có câu chuyện cá nhân","Chuyên môn sâu","Dịch vụ tận tâm","Hiểu khách hàng","Có cộng đồng","Có hệ thống/quy trình","Phong cách cá nhân khác biệt","Khác"]}/></SurveyQuestion>
+        <SurveyQuestion n={17}><label>Trải nghiệm nào có thể trở thành chất liệu xây kênh?</label><CheckboxGroup name="experiences" options={["Từng thất bại","Từng mất phương hướng","Từng thay đổi nghề nghiệp","Từng vượt qua khó khăn","Từng khởi nghiệp","Từng xây lại từ đầu","Từng đạt thành tựu nổi bật","Có nhiều case khách hàng","Chưa xác định được"]}/></SurveyQuestion>
+        <SurveyQuestion n={18}><label>Anh/chị muốn xây dựng nhóm nội dung nào?</label><CheckboxGroup name="contentPillars" options={["Chuyên môn","Case study","Câu chuyện cá nhân","Tư duy/phát triển bản thân","Hướng dẫn thực hành","Giải đáp câu hỏi","Phân tích xu hướng","Review công cụ/sản phẩm","Quan điểm cá nhân","Lifestyle gắn chuyên môn"]}/></SurveyQuestion>
+        <SurveyQuestion n={19}><label>Thời gian có thể dành mỗi ngày</label><select name="dailyTime" value={textValue("dailyTime")||"Dưới 30 phút"} onChange={e=>setText("dailyTime",e.target.value)}>{["Dưới 30 phút","30–60 phút","1–2 giờ","2–3 giờ","Trên 3 giờ"].map(x=><option key={x}>{x}</option>)}</select></SurveyQuestion>
+        <SurveyQuestion n={20}><label>Số video có thể thực hiện mỗi tuần</label><select name="videosPerWeek" value={textValue("videosPerWeek")||"1"} onChange={e=>setText("videosPerWeek",e.target.value)}>{["1","2–3","4–5","6–7","Trên 7"].map(x=><option key={x}>{x}</option>)}</select></SurveyQuestion>
       </div>
 
       <div hidden={surveyPage!==5}>
-        <Q n={21}><label>Số bài viết có thể thực hiện mỗi tuần</label><select name="postsPerWeek" value={textValue("postsPerWeek")||"1"} onChange={e=>setText("postsPerWeek",e.target.value)}>{["1","2–3","4–5","6–7","8–14","Trên 14"].map(x=><option key={x}>{x}</option>)}</select></Q>
-        <Q n={22}><label>Thời gian anh/chị sẵn sàng cam kết duy trì</label><select name="commitment" value={textValue("commitment")||"21 ngày"} onChange={e=>setText("commitment",e.target.value)}>{["21 ngày","3 tháng","6 tháng","12 tháng","Trên 12 tháng"].map(x=><option key={x}>{x}</option>)}</select></Q>
-        <Q n={23}><label>Điều gì có thể khiến anh/chị bỏ cuộc?</label><CheckboxGroup name="quittingRisks" options={["Ít view","Không có khách hàng","Không biết làm nội dung gì","Thiếu thời gian","Ngại xuất hiện","Sợ bị đánh giá","Không thấy kết quả nhanh","Thiếu kỷ luật","Không biết quay/edit","AI không đúng chất mình"]}/></Q>
-        <Q n={24}><label>Sau 12 tháng, anh/chị mong muốn kênh mang lại kết quả gì?</label><CheckboxGroup name="yearResults" options={["10.000+ follower","50.000+ follower","100.000+ follower","Có khách hàng đều mỗi tháng","Có thương hiệu cá nhân rõ ràng","Có sản phẩm riêng","Có cộng đồng riêng","Có doanh thu từ kênh","Có đội nhóm","Trở thành chuyên gia được biết đến"]}/></Q>
+        <SurveyQuestion n={21}><label>Số bài viết có thể thực hiện mỗi tuần</label><select name="postsPerWeek" value={textValue("postsPerWeek")||"1"} onChange={e=>setText("postsPerWeek",e.target.value)}>{["1","2–3","4–5","6–7","8–14","Trên 14"].map(x=><option key={x}>{x}</option>)}</select></SurveyQuestion>
+        <SurveyQuestion n={22}><label>Thời gian anh/chị sẵn sàng cam kết duy trì</label><select name="commitment" value={textValue("commitment")||"21 ngày"} onChange={e=>setText("commitment",e.target.value)}>{["21 ngày","3 tháng","6 tháng","12 tháng","Trên 12 tháng"].map(x=><option key={x}>{x}</option>)}</select></SurveyQuestion>
+        <SurveyQuestion n={23}><label>Điều gì có thể khiến anh/chị bỏ cuộc?</label><CheckboxGroup name="quittingRisks" options={["Ít view","Không có khách hàng","Không biết làm nội dung gì","Thiếu thời gian","Ngại xuất hiện","Sợ bị đánh giá","Không thấy kết quả nhanh","Thiếu kỷ luật","Không biết quay/edit","AI không đúng chất mình"]}/></SurveyQuestion>
+        <SurveyQuestion n={24}><label>Sau 12 tháng, anh/chị mong muốn kênh mang lại kết quả gì?</label><CheckboxGroup name="yearResults" options={["10.000+ follower","50.000+ follower","100.000+ follower","Có khách hàng đều mỗi tháng","Có thương hiệu cá nhân rõ ràng","Có sản phẩm riêng","Có cộng đồng riêng","Có doanh thu từ kênh","Có đội nhóm","Trở thành chuyên gia được biết đến"]}/></SurveyQuestion>
       </div>
 
       {message?.type==="error"&&<div className="error">{message.text}</div>}
