@@ -37,7 +37,9 @@ export async function POST(request:Request){
     const notifications = await Promise.allSettled([
       sendBookingEmails({
         manageToken,hostName:config.hostName,hostEmail:config.hostEmail,customerName:body.customerName,
-        customerEmail:body.customerEmail,start:body.start,end:body.end,meetUrl:calendar.meetUrl,note:body.note
+        customerEmail:body.customerEmail,customerPhone:body.customerPhone,
+        start:body.start,end:body.end,meetUrl:calendar.meetUrl,note:body.note,
+        surveyData:body.surveyData,source:body.source,campaign:body.campaign
       }),
       syncBookingSubscriber({
         email:body.customerEmail,
