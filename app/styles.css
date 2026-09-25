@@ -118,3 +118,26 @@ th, td { border-bottom:1px solid var(--line); padding:12px; text-align:left; fon
   .brand-photo-wrap{min-height:245px}
   .brand-photo{height:245px}
 }
+
+.thankyou-card{max-width:900px;margin:0 auto;text-align:center;padding:34px}
+.thankyou-icon{width:56px;height:56px;border-radius:50%;background:#eaf8f0;color:#117a45;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;margin:0 auto 14px}
+.thankyou-card h2{font-size:30px;margin:8px auto 10px;max-width:720px}
+.thankyou-copy{max-width:720px;margin:0 auto 24px;color:var(--muted);line-height:1.7}
+.lunch-box{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:center;text-align:left;background:linear-gradient(135deg,#fffaf0 0%,#ffffff 62%,#f1fbf6 100%);border:1px solid #f0dfb8;border-radius:22px;padding:24px;margin-top:10px}
+.lunch-badge{display:inline-flex;background:#fff0c8;color:#9a6b00;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:800}
+.lunch-copy h3{font-size:26px;margin:12px 0 8px}
+.lunch-copy p{color:#5f6b7c;line-height:1.65;margin:0 0 14px}
+.amount{font-size:34px;font-weight:800;color:#0f4c81;margin:10px 0}
+.bank-info{display:flex;flex-direction:column;gap:4px;font-size:15px}
+.tiny-note{font-size:12px!important;color:#7b8491!important;margin-top:14px!important}
+.qr-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;background:white;border:1px solid var(--line);border-radius:18px;padding:16px}
+.qr-wrap img{width:100%;max-width:330px;height:auto;border-radius:14px;display:block}
+.qr-wrap span{font-size:13px;font-weight:700;color:#526174;margin-top:10px;text-align:center}
+@media(max-width:760px){
+  .thankyou-card{padding:22px 16px}
+  .thankyou-card h2{font-size:26px}
+  .lunch-box{grid-template-columns:1fr;padding:18px}
+  .lunch-copy{text-align:center}
+  .bank-info{align-items:center}
+  .qr-wrap img{max-width:300px}
+}
