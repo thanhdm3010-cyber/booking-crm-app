@@ -114,18 +114,18 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
 
       <div hidden={surveyPage!==2}>
         <Q n={6}><label>Anh/chị muốn xây kênh để đạt mục tiêu gì? *</label><CheckboxGroup name="goals" options={["Xây thương hiệu cá nhân","Tìm kiếm khách hàng","Bán sản phẩm/dịch vụ","Tăng uy tín chuyên gia","Chia sẻ kiến thức","Xây cộng đồng","Phát triển sự nghiệp","Tạo thêm nguồn thu"]}/></Q>
-        <Q n={7}><label>Anh/chị muốn được khách hàng nhớ đến là người như thế nào?</label><CheckboxGroup name="rememberedAs" options={["Chuyên gia","Đáng tin cậy","Tận tâm","Thực tế","Truyền cảm hứng","Sáng tạo","Có chiều sâu","Kỷ luật","Tử tế","Khác"]}/></Q>
+        <Q n={7}><label>Anh/chị muốn được mọi người nhớ đến là người như thế nào?</label><CheckboxGroup name="rememberedAs" options={["Chuyên gia","Đáng tin cậy","Tận tâm","Thực tế","Truyền cảm hứng","Sáng tạo","Có chiều sâu","Kỷ luật","Tử tế","Khác"]}/></Q>
         <Q n={8}><label>Anh/chị có thể giúp người khác tốt hơn ở điều gì?</label><CheckboxGroup name="strengths" options={["Kiến thức chuyên môn","Kinh nghiệm thực tế","Giải quyết vấn đề","Hướng dẫn từng bước","Truyền động lực","Tư duy/định hướng","Kỹ năng nghề nghiệp","Kết nối nguồn lực","Khác"]}/></Q>
-        <Q n={9}><label>Độ tuổi khách hàng anh/chị muốn phục vụ</label><CheckboxGroup name="customerAges" options={["Dưới 18","18–24","25–34","35–44","45–54","55+"]}/></Q>
-        <Q n={10}><label>Nghề nghiệp khách hàng chính</label><CheckboxGroup name="customerJobs" options={["Học sinh/Sinh viên","Nhân viên văn phòng","Chuyên gia","Freelancer","Chủ kinh doanh","Chủ doanh nghiệp","Quản lý/Lãnh đạo","Nội trợ","Khác"]}/></Q>
+        <Q n={9}><label>Độ tuổi nhóm người anh/chị muốn phục vụ</label><CheckboxGroup name="customerAges" options={["Dưới 18","18–24","25–34","35–44","45–54","55+"]}/></Q>
+        <Q n={10}><label>Nghề nghiệp của nhóm người anh/chị muốn phục vụ</label><CheckboxGroup name="customerJobs" options={["Học sinh/Sinh viên","Nhân viên văn phòng","Chuyên gia","Freelancer","Chủ kinh doanh","Chủ doanh nghiệp","Quản lý/Lãnh đạo","Nội trợ","Khác"]}/></Q>
       </div>
 
       <div hidden={surveyPage!==3}>
-        <Q n={11}><label>Giới tính khách hàng</label><select name="customerGender"><option>Cả nam và nữ</option><option>Nam</option><option>Nữ</option><option>Không xác định cụ thể</option></select></Q>
-        <Q n={12}><label>Khu vực khách hàng</label><CheckboxGroup name="customerAreas" options={["Hà Nội","TP.HCM","Các tỉnh/thành khác","Toàn quốc","Việt Nam ở nước ngoài","Quốc tế"]}/></Q>
-        <Q n={13}><label>Khách hàng đang gặp vấn đề lớn nhất nào?</label><CheckboxGroup name="customerProblems" options={["Thiếu kiến thức","Thiếu kỹ năng","Thiếu thời gian","Thiếu nguồn lực","Thiếu khách hàng","Không biết bắt đầu từ đâu","Không duy trì được","Thiếu tự tin","Chưa tìm được giải pháp phù hợp","Khác"]}/></Q>
+        <Q n={11}><label>Giới tính của nhóm người anh/chị muốn phục vụ</label><select name="customerGender"><option>Cả nam và nữ</option><option>Nam</option><option>Nữ</option><option>Không xác định cụ thể</option></select></Q>
+        <Q n={12}><label>Khu vực sinh sống của nhóm người anh/chị muốn phục vụ</label><CheckboxGroup name="customerAreas" options={["Hà Nội","TP.HCM","Các tỉnh/thành khác","Toàn quốc","Việt Nam ở nước ngoài","Quốc tế"]}/></Q>
+        <Q n={13}><label>Nhóm người anh/chị muốn phục vụ đang gặp vấn đề lớn nhất nào?</label><CheckboxGroup name="customerProblems" options={["Thiếu kiến thức","Thiếu kỹ năng","Thiếu thời gian","Thiếu nguồn lực","Thiếu khách hàng","Không biết bắt đầu từ đâu","Không duy trì được","Thiếu tự tin","Chưa tìm được giải pháp phù hợp","Khác"]}/></Q>
         <Q n={14}><label>Sản phẩm/dịch vụ của anh/chị giải quyết nhóm vấn đề nào?</label><CheckboxGroup name="solutionProblems" options={["Tăng doanh thu","Tiết kiệm thời gian","Giảm chi phí","Cải thiện sức khỏe","Phát triển kỹ năng","Phát triển sự nghiệp","Nâng cao hiệu suất","Giải quyết vấn đề chuyên môn","Khác"]}/></Q>
-        <Q n={15}><label>Kết quả khách hàng có thể nhận được là gì?</label><CheckboxGroup name="customerResults" options={["Có kiến thức rõ ràng hơn","Có quy trình cụ thể","Tiết kiệm thời gian","Tăng doanh thu","Có thêm khách hàng","Tăng năng suất","Tăng sự tự tin","Có kết quả đo lường được","Khác"]}/></Q>
+        <Q n={15}><label>Kết quả anh/chị muốn giúp họ đạt được là gì?</label><CheckboxGroup name="customerResults" options={["Có kiến thức rõ ràng hơn","Có quy trình cụ thể","Tiết kiệm thời gian","Tăng doanh thu","Có thêm khách hàng","Tăng năng suất","Tăng sự tự tin","Có kết quả đo lường được","Khác"]}/></Q>
       </div>
 
       <div hidden={surveyPage!==4}>
