@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { brandLogo } from "@/lib/brandAssets";
+import { brandLogo, brandPortrait } from "@/lib/brandAssets";
 
 type Slot={start:string;end:string;label:string};
 const lunchQrUrl="https://img.vietqr.io/image/970407-19074528114010-compact2.png?amount=89000&addInfo=moi%20Thanh%20bua%20trua&accountName=DO%20MANH%20THANH";
@@ -166,7 +166,27 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
     </div>
   </section>;
 
-  if(step==="survey") return <section className="card survey-card">
+  if(step==="survey") return <>
+    {surveyPage===1 && <section className="brand-hero first-page-hero">
+      <div className="brand-copy">
+        <div className="hero-pill">TƯ VẤN 1:1 CÙNG ĐỖ MẠNH THÀNH</div>
+        <h1>Đặt lịch tư vấn cùng <span>Đỗ Mạnh Thành</span></h1>
+        <p>
+          Làm rõ mục tiêu, xác định hướng đi và chuẩn bị một kế hoạch phù hợp
+          để xây kênh, phát triển thương hiệu cá nhân và tạo ra cơ hội kinh doanh.
+        </p>
+        <div className="benefit-row">
+          <div><b>01</b><span>Khảo sát trước để hiểu đúng vấn đề</span></div>
+          <div><b>02</b><span>Chọn lịch phù hợp với thời gian của anh/chị</span></div>
+          <div><b>03</b><span>Trao đổi tập trung, thực tế và dễ áp dụng</span></div>
+        </div>
+      </div>
+      <div className="brand-photo-wrap">
+        <div className="brand-photo-bg"></div>
+        <img src={brandPortrait} alt="Đỗ Mạnh Thành" className="brand-photo" />
+      </div>
+    </section>}
+    <section className="card survey-card">
     <div className="survey-welcome">
       <div className="eyebrow">Khảo sát trước khi đặt lịch</div>
       <h2>Chào mừng anh/chị đến với buổi tư vấn cùng Đỗ Mạnh Thành</h2>
@@ -229,7 +249,8 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
           : <button type="button" className="primary nav-primary" onClick={completeSurvey}>Hoàn thành → Chọn lịch</button>}
       </div>
     </div>
-  </section>;
+    </section>
+  </>;
 
   return <div>
     <div className="survey-summary card">
