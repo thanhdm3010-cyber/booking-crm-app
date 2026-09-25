@@ -1,32 +1,8 @@
 "use client";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { thankYouQr } from "@/lib/thankYouQr";
 
 type Slot={start:string;end:string;label:string};
-const field=(fd:FormData,name:string)=>String(fd.get(name)||"");
-const multi=(fd:FormData,name:string)=>fd.getAll(name).map(String);
-
-const collectSurvey=(fd:FormData)=>({
-  name:field(fd,"name"), email:field(fd,"email"), phone:field(fd,"phone"), field:field(fd,"field"),
-  productName:field(fd,"productName"), goals:multi(fd,"goals"), rememberedAs:multi(fd,"rememberedAs"),
-  strengths:multi(fd,"strengths"), customerAges:multi(fd,"customerAges"), customerJobs:multi(fd,"customerJobs"),
-  customerGender:field(fd,"customerGender"), customerAreas:multi(fd,"customerAreas"),
-  customerProblems:multi(fd,"customerProblems"), solutionProblems:multi(fd,"solutionProblems"),
-  customerResults:multi(fd,"customerResults"), differentiation:multi(fd,"differentiation"),
-  experiences:multi(fd,"experiences"), contentPillars:multi(fd,"contentPillars"),
-  dailyTime:field(fd,"dailyTime"), videosPerWeek:field(fd,"videosPerWeek"), postsPerWeek:field(fd,"postsPerWeek"),
-  commitment:field(fd,"commitment"), quittingRisks:multi(fd,"quittingRisks"), yearResults:multi(fd,"yearResults")
-});
-
-const mergeSurvey=(oldData:any,newData:any)=>{
-  const out:any={...oldData};
-  for(const [k,v] of Object.entries(newData)){
-    if(Array.isArray(v)){ if(v.length) out[k]=v; else if(!(k in out)) out[k]=v; }
-    else if(String(v||"").trim()!=="") out[k]=v;
-    else if(!(k in out)) out[k]=v;
-  }
-  return out;
-};
 
 function nextDays(count=7){
   const days=[]; const base=new Date();
@@ -40,7 +16,6 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
   const [surveyPage,setSurveyPage]=useState(1);
   const [survey,setSurvey]=useState<any>(null);
   const [surveyDraft,setSurveyDraft]=useState<any>({});
-  const formRef=useRef<HTMLFormElement|null>(null);
   const [date,setDate]=useState(days[0].toISOString().slice(0,10));
   const [slots,setSlots]=useState<Slot[]>([]);
   const [selected,setSelected]=useState<Slot|null>(null);
@@ -56,58 +31,39 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
   }
   useEffect(()=>{if(step==="booking") loadSlots(date)},[date,step]);
 
-  useEffect(()=>{
-    if(!formRef.current) return;
-    const form=formRef.current;
-    for(const [name,value] of Object.entries(surveyDraft)){
-      const controls=Array.from(form.querySelectorAll<HTMLInputElement|HTMLSelectElement>(`[name="${name}"]`));
-      for(const control of controls){
-        if(control instanceof HTMLInputElement && control.type==="checkbox"){
-          control.checked=Array.isArray(value) && value.includes(control.value);
-        }else if(!Array.isArray(value) && value!=null){
-          control.value=String(value);
-        }
-      }
-    }
-  },[surveyPage,surveyDraft]);
+  const setText=(name:string,value:string)=>setSurveyDraft((d:any)=>({...d,[name]:value}));
+  const toggle=(name:string,value:string,checked:boolean)=>setSurveyDraft((d:any)=>{
+    const current=new Set<string>(Array.isArray(d[name])?d[name]:[]);
+    if(checked) current.add(value); else current.delete(value);
+    return {...d,[name]:Array.from(current)};
+  });
+  const values=(name:string):string[]=>Array.isArray(surveyDraft[name])?surveyDraft[name]:[];
+  const textValue=(name:string)=>String(surveyDraft[name]??"");
 
-  const rememberAnswer=(e:React.ChangeEvent<HTMLFormElement>)=>{
-    const target=e.target as HTMLInputElement|HTMLSelectElement;
-    if(!target.name) return;
-    setSurveyDraft((prev:any)=>{
-      const next={...prev};
-      if(target instanceof HTMLInputElement && target.type==="checkbox"){
-        const current=new Set<string>(Array.isArray(prev[target.name])?prev[target.name]:[]);
-        if(target.checked) current.add(target.value); else current.delete(target.value);
-        next[target.name]=Array.from(current);
-      }else{
-        next[target.name]=target.value;
-      }
-      return next;
-    });
-  };
-
-  function completeSurvey(fd:FormData){
-    const data=mergeSurvey(surveyDraft,collectSurvey(fd));
+  function completeSurvey(){
+    const data=surveyDraft;
     if(!data.name || !data.email || !data.field){
-      setSurveyDraft(data);
       setSurveyPage(1);
       setMessage({type:"error",text:"Vui lòng hoàn thành Họ tên, Email và Lĩnh vực trước khi tiếp tục."});
+      scrollSurveyTop();
       return;
     }
     if(!/^\S+@\S+\.\S+$/.test(data.email)){
-      setSurveyDraft(data);
       setSurveyPage(1);
       setMessage({type:"error",text:"Email chưa đúng định dạng. Anh/chị vui lòng kiểm tra lại."});
+      scrollSurveyTop();
       return;
     }
-    if(data.goals.length===0){
-      setSurveyDraft(data);
+    if(!Array.isArray(data.goals) || data.goals.length===0){
       setSurveyPage(2);
       setMessage({type:"error",text:"Vui lòng chọn ít nhất 1 mục tiêu xây kênh ở câu 6."});
+      scrollSurveyTop();
       return;
     }
-    setSurvey(data); setMessage(null); setStep("booking");
+    setSurvey(data);
+    setMessage(null);
+    setStep("booking");
+    window.requestAnimationFrame(()=>window.scrollTo({top:0,behavior:"smooth"}));
   }
 
   async function book(){
@@ -131,38 +87,32 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
   }
 
   const CheckboxGroup=({name,options}:{name:string;options:string[]})=>
-    <div className="checkgrid">{options.map(o=><label className="check" key={o}><input type="checkbox" name={name} value={o}/><span>{o}</span></label>)}</div>;
+    <div className="checkgrid">{options.map(o=><label className="check" key={o}><input type="checkbox" name={name} value={o} checked={values(name).includes(o)} onChange={e=>toggle(name,o,e.target.checked)}/><span>{o}</span></label>)}</div>;
 
   const Q=({n,children}:{n:number;children:ReactNode})=>
     <div className="question"><div className="qnumber">{n}</div><div className="qbody">{children}</div></div>;
 
   const scrollSurveyTop=()=>{window.requestAnimationFrame(()=>window.scrollTo({top:0,behavior:"smooth"}))};
   const next=()=>{
-    if(!formRef.current) return;
-    const data=mergeSurvey(surveyDraft,collectSurvey(new FormData(formRef.current)));
     if(surveyPage===1){
-      if(!data.name || !data.email || !data.field){
+      if(!surveyDraft.name || !surveyDraft.email || !surveyDraft.field){
         setMessage({type:"error",text:"Vui lòng hoàn thành Họ tên, Email và Lĩnh vực trước khi tiếp tục."});
         scrollSurveyTop(); return;
       }
-      if(!/^\S+@\S+\.\S+$/.test(data.email)){
+      if(!/^\S+@\S+\.\S+$/.test(String(surveyDraft.email))){
         setMessage({type:"error",text:"Email chưa đúng định dạng. Anh/chị vui lòng kiểm tra lại."});
         scrollSurveyTop(); return;
       }
     }
-    if(surveyPage===2 && data.goals.length===0){
+    if(surveyPage===2 && (!Array.isArray(surveyDraft.goals) || surveyDraft.goals.length===0)){
       setMessage({type:"error",text:"Vui lòng chọn ít nhất 1 mục tiêu xây kênh ở câu 6."});
       scrollSurveyTop(); return;
     }
-    setSurveyDraft(data);
     setMessage(null);
     setSurveyPage(p=>Math.min(5,p+1));
     scrollSurveyTop();
   };
-  const back=()=>{
-    if(formRef.current) setSurveyDraft(d=>mergeSurvey(d,collectSurvey(new FormData(formRef.current))));
-    setMessage(null);setSurveyPage(p=>Math.max(1,p-1));scrollSurveyTop()
-  };
+  const back=()=>{setMessage(null);setSurveyPage(p=>Math.max(1,p-1));scrollSurveyTop()};
   const rangeText=surveyPage<5 ? "Câu "+(((surveyPage-1)*5)+1)+"–"+(surveyPage*5) : "Câu 21–24";
 
   if(bookingComplete) return <section className="card thankyou-card">
@@ -210,15 +160,15 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
       <div className="progress-track"><div className="progress-fill" style={{width:String(surveyPage*20)+"%"}}/></div>
     </div>
 
-    <form ref={formRef} noValidate onChange={rememberAnswer} onSubmit={(e)=>{e.preventDefault();completeSurvey(new FormData(e.currentTarget));}}>
+    <div>
       <div hidden={surveyPage!==1}>
-        <Q n={1}><label>Họ và tên *</label><input name="name" placeholder="Nguyễn Văn A"/></Q>
-        <Q n={2}><label>Email *</label><input name="email" type="email" placeholder="ban@email.com"/></Q>
-        <Q n={3}><label>Số điện thoại</label><input name="phone" placeholder="09..."/></Q>
+        <Q n={1}><label>Họ và tên *</label><input name="name" placeholder="Nguyễn Văn A" value={textValue("name")} onChange={e=>setText("name",e.target.value)}/></Q>
+        <Q n={2}><label>Email *</label><input name="email" type="email" placeholder="ban@email.com" value={textValue("email")} onChange={e=>setText("email",e.target.value)}/></Q>
+        <Q n={3}><label>Số điện thoại</label><input name="phone" placeholder="09..." value={textValue("phone")} onChange={e=>setText("phone",e.target.value)}/></Q>
         <Q n={4}><label>Lĩnh vực anh/chị đang hoạt động *</label>
-          <select name="field" defaultValue=""><option value="" disabled>Chọn lĩnh vực</option>{["Kinh doanh/Bán hàng","Marketing/Truyền thông","Giáo dục/Đào tạo","Sức khỏe/Wellness","Làm đẹp","Bất động sản","Tài chính/Bảo hiểm","Công nghệ/IT","Nội thất/Xây dựng","Ô tô","F&B","Dịch vụ chuyên môn","Nghệ thuật/Sáng tạo","Khác"].map(x=><option key={x}>{x}</option>)}</select>
+          <select name="field" value={textValue("field")} onChange={e=>setText("field",e.target.value)}><option value="" disabled>Chọn lĩnh vực</option>{["Kinh doanh/Bán hàng","Marketing/Truyền thông","Giáo dục/Đào tạo","Sức khỏe/Wellness","Làm đẹp","Bất động sản","Tài chính/Bảo hiểm","Công nghệ/IT","Nội thất/Xây dựng","Ô tô","F&B","Dịch vụ chuyên môn","Nghệ thuật/Sáng tạo","Khác"].map(x=><option key={x}>{x}</option>)}</select>
         </Q>
-        <Q n={5}><label>Sản phẩm/dịch vụ anh/chị đang cung cấp</label><input name="productName" placeholder="Nếu chưa có, có thể để trống"/></Q>
+        <Q n={5}><label>Sản phẩm/dịch vụ anh/chị đang cung cấp</label><input name="productName" placeholder="Nếu chưa có, có thể để trống" value={textValue("productName")} onChange={e=>setText("productName",e.target.value)}/></Q>
       </div>
 
       <div hidden={surveyPage!==2}>
@@ -230,7 +180,7 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
       </div>
 
       <div hidden={surveyPage!==3}>
-        <Q n={11}><label>Giới tính của nhóm người anh/chị muốn phục vụ</label><select name="customerGender"><option>Cả nam và nữ</option><option>Nam</option><option>Nữ</option><option>Không xác định cụ thể</option></select></Q>
+        <Q n={11}><label>Giới tính của nhóm người anh/chị muốn phục vụ</label><select name="customerGender" value={textValue("customerGender")||"Cả nam và nữ"} onChange={e=>setText("customerGender",e.target.value)}><option>Cả nam và nữ</option><option>Nam</option><option>Nữ</option><option>Không xác định cụ thể</option></select></Q>
         <Q n={12}><label>Khu vực sinh sống của nhóm người anh/chị muốn phục vụ</label><CheckboxGroup name="customerAreas" options={["Hà Nội","TP.HCM","Các tỉnh/thành khác","Toàn quốc","Việt Nam ở nước ngoài","Quốc tế"]}/></Q>
         <Q n={13}><label>Nhóm người anh/chị muốn phục vụ đang gặp vấn đề lớn nhất nào?</label><CheckboxGroup name="customerProblems" options={["Thiếu kiến thức","Thiếu kỹ năng","Thiếu thời gian","Thiếu nguồn lực","Thiếu khách hàng","Không biết bắt đầu từ đâu","Không duy trì được","Thiếu tự tin","Chưa tìm được giải pháp phù hợp","Khác"]}/></Q>
         <Q n={14}><label>Sản phẩm/dịch vụ của anh/chị giải quyết nhóm vấn đề nào?</label><CheckboxGroup name="solutionProblems" options={["Tăng doanh thu","Tiết kiệm thời gian","Giảm chi phí","Cải thiện sức khỏe","Phát triển kỹ năng","Phát triển sự nghiệp","Nâng cao hiệu suất","Giải quyết vấn đề chuyên môn","Khác"]}/></Q>
@@ -241,13 +191,13 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
         <Q n={16}><label>Điểm khác biệt của anh/chị là gì?</label><CheckboxGroup name="differentiation" options={["Nhiều năm kinh nghiệm","Có kết quả thực tế","Có phương pháp riêng","Có câu chuyện cá nhân","Chuyên môn sâu","Dịch vụ tận tâm","Hiểu khách hàng","Có cộng đồng","Có hệ thống/quy trình","Phong cách cá nhân khác biệt","Khác"]}/></Q>
         <Q n={17}><label>Trải nghiệm nào có thể trở thành chất liệu xây kênh?</label><CheckboxGroup name="experiences" options={["Từng thất bại","Từng mất phương hướng","Từng thay đổi nghề nghiệp","Từng vượt qua khó khăn","Từng khởi nghiệp","Từng xây lại từ đầu","Từng đạt thành tựu nổi bật","Có nhiều case khách hàng","Chưa xác định được"]}/></Q>
         <Q n={18}><label>Anh/chị muốn xây dựng nhóm nội dung nào?</label><CheckboxGroup name="contentPillars" options={["Chuyên môn","Case study","Câu chuyện cá nhân","Tư duy/phát triển bản thân","Hướng dẫn thực hành","Giải đáp câu hỏi","Phân tích xu hướng","Review công cụ/sản phẩm","Quan điểm cá nhân","Lifestyle gắn chuyên môn"]}/></Q>
-        <Q n={19}><label>Thời gian có thể dành mỗi ngày</label><select name="dailyTime">{["Dưới 30 phút","30–60 phút","1–2 giờ","2–3 giờ","Trên 3 giờ"].map(x=><option key={x}>{x}</option>)}</select></Q>
-        <Q n={20}><label>Số video có thể thực hiện mỗi tuần</label><select name="videosPerWeek">{["1","2–3","4–5","6–7","Trên 7"].map(x=><option key={x}>{x}</option>)}</select></Q>
+        <Q n={19}><label>Thời gian có thể dành mỗi ngày</label><select name="dailyTime" value={textValue("dailyTime")||"Dưới 30 phút"} onChange={e=>setText("dailyTime",e.target.value)}>{["Dưới 30 phút","30–60 phút","1–2 giờ","2–3 giờ","Trên 3 giờ"].map(x=><option key={x}>{x}</option>)}</select></Q>
+        <Q n={20}><label>Số video có thể thực hiện mỗi tuần</label><select name="videosPerWeek" value={textValue("videosPerWeek")||"1"} onChange={e=>setText("videosPerWeek",e.target.value)}>{["1","2–3","4–5","6–7","Trên 7"].map(x=><option key={x}>{x}</option>)}</select></Q>
       </div>
 
       <div hidden={surveyPage!==5}>
-        <Q n={21}><label>Số bài viết có thể thực hiện mỗi tuần</label><select name="postsPerWeek">{["1","2–3","4–5","6–7","8–14","Trên 14"].map(x=><option key={x}>{x}</option>)}</select></Q>
-        <Q n={22}><label>Thời gian anh/chị sẵn sàng cam kết duy trì</label><select name="commitment">{["21 ngày","3 tháng","6 tháng","12 tháng","Trên 12 tháng"].map(x=><option key={x}>{x}</option>)}</select></Q>
+        <Q n={21}><label>Số bài viết có thể thực hiện mỗi tuần</label><select name="postsPerWeek" value={textValue("postsPerWeek")||"1"} onChange={e=>setText("postsPerWeek",e.target.value)}>{["1","2–3","4–5","6–7","8–14","Trên 14"].map(x=><option key={x}>{x}</option>)}</select></Q>
+        <Q n={22}><label>Thời gian anh/chị sẵn sàng cam kết duy trì</label><select name="commitment" value={textValue("commitment")||"21 ngày"} onChange={e=>setText("commitment",e.target.value)}>{["21 ngày","3 tháng","6 tháng","12 tháng","Trên 12 tháng"].map(x=><option key={x}>{x}</option>)}</select></Q>
         <Q n={23}><label>Điều gì có thể khiến anh/chị bỏ cuộc?</label><CheckboxGroup name="quittingRisks" options={["Ít view","Không có khách hàng","Không biết làm nội dung gì","Thiếu thời gian","Ngại xuất hiện","Sợ bị đánh giá","Không thấy kết quả nhanh","Thiếu kỷ luật","Không biết quay/edit","AI không đúng chất mình"]}/></Q>
         <Q n={24}><label>Sau 12 tháng, anh/chị mong muốn kênh mang lại kết quả gì?</label><CheckboxGroup name="yearResults" options={["10.000+ follower","50.000+ follower","100.000+ follower","Có khách hàng đều mỗi tháng","Có thương hiệu cá nhân rõ ràng","Có sản phẩm riêng","Có cộng đồng riêng","Có doanh thu từ kênh","Có đội nhóm","Trở thành chuyên gia được biết đến"]}/></Q>
       </div>
@@ -258,15 +208,15 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
         <button type="button" className="secondary" onClick={back} disabled={surveyPage===1}>← Quay lại</button>
         {surveyPage<5
           ? <button type="button" className="primary nav-primary" onClick={next}>Tiếp tục →</button>
-          : <button type="submit" className="primary nav-primary">Hoàn thành → Chọn lịch</button>}
+          : <button type="button" className="primary nav-primary" onClick={completeSurvey}>Hoàn thành → Chọn lịch</button>}
       </div>
-    </form>
+    </div>
   </section>;
 
   return <div>
     <div className="survey-summary card">
       <div><div className="eyebrow">Khảo sát đã hoàn thành · Chọn lịch</div><strong>{survey?.name}</strong> · {survey?.field}</div>
-      <button onClick={()=>{setStep("survey");setSurveyPage(1)}}>Sửa khảo sát</button>
+      <button onClick={()=>{setSurveyDraft(survey||surveyDraft);setStep("survey");setSurveyPage(1)}}>Sửa khảo sát</button>
     </div>
     <div className="grid">
       <section className="card">
