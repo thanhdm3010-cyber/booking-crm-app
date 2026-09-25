@@ -3,6 +3,7 @@ import { config } from "@/lib/config";
 import { hasConflict, saveBooking } from "@/lib/store";
 import { createCalendarEvent } from "@/lib/calendar";
 import { sendBookingEmails } from "@/lib/email";
+import { syncBookingSubscriber } from "@/lib/kit";
 import { Booking } from "@/lib/types";
 
 const schema = z.object({
@@ -33,11 +34,32 @@ export async function POST(request:Request){
       status:"confirmed",crmStage:"booked",meetUrl:calendar.meetUrl,calendarEventId:calendar.eventId,createdAt:now,updatedAt:now
     };
     await saveBooking(booking);
-    await sendBookingEmails({
-      manageToken,hostName:config.hostName,hostEmail:config.hostEmail,customerName:body.customerName,
-      customerEmail:body.customerEmail,start:body.start,end:body.end,meetUrl:calendar.meetUrl,note:body.note
+    const notifications = await Promise.allSettled([
+      sendBookingEmails({
+        manageToken,hostName:config.hostName,hostEmail:config.hostEmail,customerName:body.customerName,
+        customerEmail:body.customerEmail,start:body.start,end:body.end,meetUrl:calendar.meetUrl,note:body.note
+      }),
+      syncBookingSubscriber({
+        email:body.customerEmail,
+        name:body.customerName,
+        tagName:"booking-coaching"
+      })
+    ]);
+
+    notifications.forEach((result,index)=>{
+      if(result.status==="rejected"){
+        console.error(index===0?"Booking email failed":"Kit sync failed",result.reason);
+      }
     });
-    return Response.json({ok:true,bookingId:booking.id,manageToken,meetUrl:booking.meetUrl});
+
+    return Response.json({
+      ok:true,
+      bookingId:booking.id,
+      manageToken,
+      meetUrl:booking.meetUrl,
+      emailStatus:notifications[0].status,
+      kitStatus:notifications[1].status
+    });
   }catch(error){
     console.error(error);
     return Response.json({error:"Dữ liệu chưa hợp lệ hoặc hệ thống gặp lỗi."},{status:400});
