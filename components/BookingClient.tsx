@@ -9,6 +9,20 @@ function SurveyQuestion({n,children}:{n:number;children:ReactNode}){
   return <div className="question"><div className="qnumber">{n}</div><div className="qbody">{children}</div></div>;
 }
 
+function FlowSteps({active}:{active:number}){
+  const steps=["Giới thiệu","Khảo sát","Chọn lịch","Xác nhận"];
+  return <div className="flow-steps" aria-label="Tiến trình đặt lịch">
+    {steps.map((label,i)=>{
+      const n=i+1;
+      const state=n<active?"done":n===active?"active":"";
+      return <div className={"flow-step "+state} key={label}>
+        <div className="flow-dot">{n<active?"✓":n}</div>
+        <span>{label}</span>
+      </div>;
+    })}
+  </div>;
+}
+
 function nextDays(count=7){
   const days=[]; const base=new Date();
   for(let i=1;i<=count;i++){const d=new Date(base);d.setDate(base.getDate()+i);days.push(d)}
@@ -133,7 +147,13 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
   const back=()=>{setMessage(null);setSurveyPage(p=>Math.max(1,p-1));scrollSurveyTop()};
   const rangeText=surveyPage<5 ? "Câu "+(((surveyPage-1)*5)+1)+"–"+(surveyPage*5) : "Câu 21–24";
 
-  if(bookingComplete) return <section className="card thankyou-card thankyou-visual">
+  if(bookingComplete) return <div id="booking-flow" className="booking-flow">
+    <FlowSteps active={4}/>
+    <section className="card thankyou-card thankyou-visual">
+      <div className="booking-success">
+        <div className="success-check">✓</div>
+        <div><strong>Đặt lịch thành công!</strong><span>Thông tin chi tiết đã được gửi tới email của anh/chị.</span></div>
+      </div>
     <div className="thankyou-brand">
       <img src={brandLogo} alt="ANLIFE - Kiến tạo giá trị sống" />
     </div>
@@ -167,9 +187,11 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
         <img className="vietqr-image" src={lunchQrUrl} alt="VietQR Techcombank - Đỗ Mạnh Thành - 89.000 đồng" />
       </div>
     </div>
-  </section>;
+    </section>
+  </div>;
 
-  if(step==="survey") return <>
+  if(step==="survey") return <div id="booking-flow" className="booking-flow">
+    <FlowSteps active={surveyPage===1?1:2}/>
     {surveyPage===1 && <section className="brand-hero first-page-hero">
       <div className="brand-copy">
         <div className="hero-pill">TƯ VẤN 1:1 CÙNG ĐỖ MẠNH THÀNH</div>
@@ -183,6 +205,8 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
           <div><b>02</b><span>Chọn lịch phù hợp với thời gian của anh/chị</span></div>
           <div><b>03</b><span>Trao đổi tập trung, thực tế và dễ áp dụng</span></div>
         </div>
+        <button type="button" className="hero-cta" onClick={()=>document.querySelector(".survey-card")?.scrollIntoView({behavior:"smooth",block:"start"})}>▣ &nbsp; Bắt đầu khảo sát &nbsp; →</button>
+        <div className="privacy-note">🔒 Thông tin của anh/chị được bảo mật tuyệt đối.</div>
       </div>
       <div className="brand-photo-wrap">
         <div className="brand-photo-bg"></div>
@@ -253,17 +277,18 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
       </div>
     </div>
     </section>
-  </>;
+  </div>;
 
-  return <div>
+  return <div id="booking-flow" className="booking-flow">
+    <FlowSteps active={3}/>
     <div className="survey-summary card">
-      <div><div className="eyebrow">Khảo sát đã hoàn thành · Chọn lịch</div><strong>{survey?.name}</strong> · {survey?.field}</div>
-      <button onClick={()=>{setSurveyDraft(survey||surveyDraft);setStep("survey");setSurveyPage(1)}}>Sửa khảo sát</button>
+      <div><div className="eyebrow">Khảo sát đã hoàn thành</div><strong>{survey?.name}</strong><span className="summary-sep"> · </span>{survey?.field}</div>
+      <button className="secondary compact" onClick={()=>{setSurveyDraft(survey||surveyDraft);setStep("survey");setSurveyPage(1)}}>Sửa khảo sát</button>
     </div>
     <div className="grid">
       <section className="card">
-        <div className="eyebrow">Chọn thời gian</div><h2>{hostName}</h2>
-        <p className="muted">Tư vấn 1:1 · 45 phút · Múi giờ Việt Nam</p>
+        <div className="eyebrow">Chọn lịch tư vấn</div><h2>Chọn lịch tư vấn phù hợp với anh/chị</h2>
+        <p className="muted">Tư vấn 1:1 cùng {hostName} · 45 phút · Múi giờ Việt Nam</p>
         <div className="days">{days.map(d=>{const value=d.toISOString().slice(0,10);return <button key={value} className={"day "+(date===value?"active":"")} onClick={()=>setDate(value)}><div>{d.toLocaleDateString("vi-VN",{weekday:"short"})}</div><strong>{d.getDate()}</strong></button>})}</div>
         <div className="slots">
           {slotsLoading && <p className="muted">Đang tải lịch trống...</p>}
@@ -273,9 +298,14 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
         </div>
       </section>
       <section className="card">
-        <div className="eyebrow">Xác nhận</div><h2>Hoàn tất đặt lịch</h2>
-        <p className="muted">{selected?"Bạn đang chọn "+selected.label+".":"Hãy chọn một khung giờ ở bên trái."}</p>
-        <p><strong>{survey?.name}</strong><br/>{survey?.email}<br/>{survey?.phone}</p>
+        <div className="eyebrow">Xác nhận thông tin</div><h2>Xác nhận thông tin đặt lịch</h2>
+        <p className="muted">{selected?"Anh/chị đang chọn khung giờ "+selected.label+".":"Hãy chọn một khung giờ ở bên trái."}</p>
+        <div className="confirm-info">
+          <div><span>Họ và tên</span><strong>{survey?.name}</strong></div>
+          <div><span>Email</span><strong>{survey?.email}</strong></div>
+          <div><span>Số điện thoại</span><strong>{survey?.phone||"—"}</strong></div>
+          <div><span>Hình thức</span><strong>Zoom · 45 phút</strong></div>
+        </div>
         <button className="primary" disabled={!selected||loading} onClick={book}>{loading?"Đang đặt lịch...":"XÁC NHẬN ĐẶT LỊCH"}</button>
         {message?.type==="ok"&&<div className="success">{message.text}</div>}
         {message?.type==="error"&&<div className="error">{message.text}</div>}
