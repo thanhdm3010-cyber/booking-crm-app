@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { thankYouQr } from "@/lib/brandAssets";
 
 type Slot={start:string;end:string;label:string};
 const field=(fd:FormData,name:string)=>String(fd.get(name)||"");
@@ -20,6 +21,7 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
   const [slots,setSlots]=useState<Slot[]>([]);
   const [selected,setSelected]=useState<Slot|null>(null);
   const [loading,setLoading]=useState(false);
+  const [bookingComplete,setBookingComplete]=useState(false);
   const [message,setMessage]=useState<{type:"ok"|"error";text:string}|null>(null);
 
   async function loadSlots(d:string){
@@ -77,6 +79,7 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
       await loadSlots(date); return;
     }
     setMessage({type:"ok",text:"Đặt lịch thành công. Thành đã nhận được thông tin của anh/chị."});
+    setBookingComplete(true);
   }
 
   const CheckboxGroup=({name,options}:{name:string;options:string[]})=>
@@ -88,6 +91,38 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
   const next=()=>{setMessage(null);setSurveyPage(p=>Math.min(5,p+1))};
   const back=()=>{setMessage(null);setSurveyPage(p=>Math.max(1,p-1))};
   const rangeText=surveyPage<5 ? "Câu "+(((surveyPage-1)*5)+1)+"–"+(surveyPage*5) : "Câu 21–24";
+
+  if(bookingComplete) return <section className="card thankyou-card">
+    <div className="thankyou-icon">✓</div>
+    <div className="eyebrow">Đặt lịch thành công</div>
+    <h2>Cảm ơn anh/chị đã dành thời gian đặt lịch cùng Thành</h2>
+    <p className="thankyou-copy">
+      Thành trân trọng sự tin tưởng của anh/chị và sẽ chuẩn bị kỹ để buổi trao đổi đi đúng trọng tâm,
+      thực tế và mang lại giá trị hữu ích nhất.
+    </p>
+
+    <div className="lunch-box">
+      <div className="lunch-copy">
+        <div className="lunch-badge">Một lời động viên nhỏ 💚</div>
+        <h3>Mời Thành một bữa trưa nhé!</h3>
+        <p>
+          Nếu anh/chị thấy những chia sẻ của Thành hữu ích, anh/chị có thể mời Thành một bữa trưa
+          như một lời cảm ơn và động viên để Thành tiếp tục chia sẻ nhiều giá trị hơn.
+        </p>
+        <div className="amount">89.000đ</div>
+        <div className="bank-info">
+          <span><strong>Techcombank</strong></span>
+          <span>Đỗ Mạnh Thành</span>
+          <span>1907 4528 1140 10</span>
+        </div>
+        <p className="tiny-note">Hoàn toàn tự nguyện. Anh/chị có thể bỏ qua và vẫn tham gia buổi tư vấn như bình thường.</p>
+      </div>
+      <div className="qr-wrap">
+        <img src={thankYouQr} alt="QR chuyển khoản Techcombank cho Đỗ Mạnh Thành" />
+        <span>Quét QR để mời Thành bữa trưa</span>
+      </div>
+    </div>
+  </section>;
 
   if(step==="survey") return <section className="card survey-card">
     <div className="survey-welcome">
