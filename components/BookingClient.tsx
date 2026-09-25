@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { thankYouQr } from "@/lib/brandAssets";
+import { thankYouQr } from "@/lib/thankYouQr";
 
 type Slot={start:string;end:string;label:string};
 const field=(fd:FormData,name:string)=>String(fd.get(name)||"");
@@ -95,10 +95,11 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
   if(bookingComplete) return <section className="card thankyou-card">
     <div className="thankyou-icon">✓</div>
     <div className="eyebrow">Đặt lịch thành công</div>
-    <h2>Cảm ơn anh/chị đã dành thời gian đặt lịch cùng Thành</h2>
+    <h2>Cảm ơn anh/chị đã đặt lịch thành công</h2>
     <p className="thankyou-copy">
-      Thành trân trọng sự tin tưởng của anh/chị và sẽ chuẩn bị kỹ để buổi trao đổi đi đúng trọng tâm,
-      thực tế và mang lại giá trị hữu ích nhất.
+      Thành đã nhận được thông tin của anh/chị. Trước buổi coaching, anh/chị vui lòng chuẩn bị trước
+      những thông tin quan trọng, vấn đề đang gặp phải và các câu hỏi muốn trao đổi, để buổi coaching
+      đi đúng trọng tâm, tiết kiệm thời gian và mang lại giá trị thực tế nhất.
     </p>
 
     <div className="lunch-box">
@@ -106,8 +107,8 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
         <div className="lunch-badge">Một lời động viên nhỏ 💚</div>
         <h3>Mời Thành một bữa trưa nhé!</h3>
         <p>
-          Nếu anh/chị thấy những chia sẻ của Thành hữu ích, anh/chị có thể mời Thành một bữa trưa
-          như một lời cảm ơn và động viên để Thành tiếp tục chia sẻ nhiều giá trị hơn.
+          Nếu anh/chị thấy những chia sẻ và buổi coaching cùng Thành hữu ích, anh/chị có thể gửi Thành
+          một lời động viên nhỏ qua mã QR bên dưới.
         </p>
         <div className="amount">89.000đ</div>
         <div className="bank-info">
@@ -115,7 +116,7 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
           <span>Đỗ Mạnh Thành</span>
           <span>1907 4528 1140 10</span>
         </div>
-        <p className="tiny-note">Hoàn toàn tự nguyện. Anh/chị có thể bỏ qua và vẫn tham gia buổi tư vấn như bình thường.</p>
+        <p className="tiny-note">Anh/chị có thể bỏ qua phần này và vẫn tham gia buổi coaching như bình thường.</p>
       </div>
       <div className="qr-wrap">
         <img src={thankYouQr} alt="QR chuyển khoản Techcombank cho Đỗ Mạnh Thành" />
