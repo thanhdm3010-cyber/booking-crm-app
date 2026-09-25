@@ -54,7 +54,14 @@ export async function createCalendarEvent(input: {
       location: config.zoomUrl,
       start: { dateTime: input.start },
       end: { dateTime: input.end },
-      attendees: [{ email: input.attendeeEmail }]
+      attendees: [{ email: input.attendeeEmail }],
+      reminders: {
+        useDefault: false,
+        overrides: [
+          { method: "popup", minutes: 1440 },
+          { method: "popup", minutes: 60 }
+        ]
+      }
     }
   });
   const event = response.data;
