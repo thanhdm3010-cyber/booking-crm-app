@@ -8,6 +8,7 @@ export default function AdminClient(){
  const [rows,setRows]=useState<any[]>([]);
  const [availability,setAvailability]=useState<any[]>([]);
  const [busy,setBusy]=useState<any[]>([]);
+ const [expanded,setExpanded]=useState<string|null>(null);
  const [err,setErr]=useState("");
 
  async function load(){
@@ -30,7 +31,6 @@ export default function AdminClient(){
    if(!r.ok){setErr("Không thể cập nhật");return}
    load();
  }
-
  async function addAvailability(fd:FormData){
    const payload={weekday:Number(fd.get("weekday")),startTime:String(fd.get("startTime")),endTime:String(fd.get("endTime")),isActive:true};
    const r=await fetch("/api/admin/availability",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
@@ -39,7 +39,6 @@ export default function AdminClient(){
  async function deleteAvailability(id:string){
    await fetch("/api/admin/availability",{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({id})}); load();
  }
-
  async function addBusy(fd:FormData){
    const startLocal=String(fd.get("start"));
    const endLocal=String(fd.get("end"));
@@ -57,6 +56,16 @@ export default function AdminClient(){
    attended:rows.filter(x=>["attended","follow_up","interested","customer"].includes(x.crmStage)).length,
    customers:rows.filter(x=>x.crmStage==="customer").length
  }),[rows]);
+
+ const labels:any={
+   field:"Lĩnh vực",products:"Loại sản phẩm/dịch vụ",goals:"Mục tiêu xây kênh",rememberedAs:"Muốn được nhớ đến",
+   strengths:"Thế mạnh chia sẻ",customerAges:"Độ tuổi KH",customerJobs:"Nghề nghiệp KH",customerGender:"Giới tính KH",
+   customerAreas:"Khu vực KH",customerProblems:"Vấn đề KH",solutionProblems:"Vấn đề sản phẩm giải quyết",
+   customerResults:"Kết quả KH nhận được",differentiation:"Điểm khác biệt",experiences:"Chất liệu trải nghiệm",
+   contentPillars:"Nhóm nội dung",dailyTime:"Thời gian mỗi ngày",videosPerWeek:"Video/tuần",postsPerWeek:"Bài viết/tuần",
+   commitment:"Cam kết duy trì",quittingRisks:"Rủi ro bỏ cuộc",dreamChannel:"Kênh mong muốn",yearResults:"Kết quả 12 tháng",
+   revenueGoal:"Mục tiêu doanh thu",productName:"Tên sản phẩm/dịch vụ",rememberOther:"Mô tả thêm",notes:"Ghi chú"
+ };
 
  return <>
  {err&&<div className="error">{err}</div>}
@@ -104,12 +113,24 @@ export default function AdminClient(){
  </div>
 
  <div className="card" style={{overflowX:"auto"}}>
- <table><thead><tr><th>Khách</th><th>Thời gian</th><th>Nguồn</th><th>Trạng thái</th><th>CRM</th></tr></thead>
- <tbody>{rows.map(b=><tr key={b.id}>
+ <table><thead><tr><th>Khách</th><th>Thời gian</th><th>Nguồn</th><th>Trạng thái</th><th>CRM</th><th>Khảo sát</th></tr></thead>
+ <tbody>{rows.map(b=><>
+  <tr key={b.id}>
    <td><strong>{b.customerName}</strong><br/><span className="muted">{b.customerEmail}</span></td>
    <td>{new Date(b.start).toLocaleString("vi-VN")}</td><td>{b.source||"direct"}</td><td>{b.status}</td>
    <td><select value={b.crmStage} onChange={e=>stage(b.id,e.target.value)}>{stages.map(s=><option key={s} value={s}>{s}</option>)}</select></td>
- </tr>)}</tbody></table>
+   <td><button onClick={()=>setExpanded(expanded===b.id?null:b.id)}>{expanded===b.id?"Đóng":"Xem"}</button></td>
+  </tr>
+  {expanded===b.id&&<tr key={b.id+"-survey"}><td colSpan={6}>
+    <div className="survey-detail">
+      {Object.entries(b.surveyData||{}).filter(([key])=>!["name","email","phone"].includes(key)).map(([key,val])=>{
+        const t=Array.isArray(val)?val.join(", "):String(val||"");
+        if(!t) return null;
+        return <div key={key}><strong>{labels[key]||key}:</strong> <span>{t}</span></div>
+      })}
+    </div>
+  </td></tr>}
+ </>)}</tbody></table>
  </div>
  </>
 }
