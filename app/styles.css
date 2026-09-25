@@ -52,3 +52,13 @@ th, td { border-bottom:1px solid var(--line); padding:12px; text-align:left; fon
   .kpis { grid-template-columns: repeat(2, 1fr); }
 }
 .danger{margin-top:12px;background:#fff0f0;color:#a32626;border:1px solid #f0bcbc;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer}.inline{display:flex;gap:8px}.small{background:var(--brand);color:white;border:0;border-radius:12px;padding:0 16px;font-weight:700}.adminlogin{margin-bottom:18px}select{border:1px solid var(--line);border-radius:10px;padding:8px;background:white}
+
+.survey-card{max-width:900px;margin:0 auto}
+.survey-card h3{margin:28px 0 8px;padding-top:18px;border-top:1px solid var(--line);font-size:20px}
+.checkgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 16px}
+.check{display:flex;align-items:flex-start;gap:8px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0;background:#fff;font-weight:500}
+.check input{width:auto;margin-top:3px}
+.survey-summary{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.survey-detail{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px;padding:10px}
+.survey-detail div{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:10px;line-height:1.45}
+@media(max-width:800px){.checkgrid,.survey-detail{grid-template-columns:1fr}.survey-summary{align-items:flex-start;gap:12px;flex-direction:column}}
