@@ -88,8 +88,9 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
   const Q=({n,children}:{n:number;children:ReactNode})=>
     <div className="question"><div className="qnumber">{n}</div><div className="qbody">{children}</div></div>;
 
-  const next=()=>{setMessage(null);setSurveyPage(p=>Math.min(5,p+1))};
-  const back=()=>{setMessage(null);setSurveyPage(p=>Math.max(1,p-1))};
+  const scrollSurveyTop=()=>{window.requestAnimationFrame(()=>window.scrollTo({top:0,behavior:"smooth"}))};
+  const next=()=>{setMessage(null);setSurveyPage(p=>Math.min(5,p+1));scrollSurveyTop()};
+  const back=()=>{setMessage(null);setSurveyPage(p=>Math.max(1,p-1));scrollSurveyTop()};
   const rangeText=surveyPage<5 ? "Câu "+(((surveyPage-1)*5)+1)+"–"+(surveyPage*5) : "Câu 21–24";
 
   if(bookingComplete) return <section className="card thankyou-card">
