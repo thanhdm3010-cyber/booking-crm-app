@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { brandLogo, brandPortrait } from "@/lib/brandAssets";
+import { brandLogo, brandPortrait, bookingPortraitTransparent } from "@/lib/brandAssets";
 
 type Slot={start:string;end:string;label:string};
 const lunchQrUrl="https://img.vietqr.io/image/970407-19074528114010-compact2.png?amount=89000&addInfo=moi%20Thanh%20bua%20trua&accountName=DO%20MANH%20THANH";
@@ -157,7 +157,7 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
     <div className="thankyou-layout">
       <div className="thankyou-message">
         <div className="thankyou-person">
-          <img src={brandPortrait} alt="Đỗ Mạnh Thành" />
+          <img src={bookingPortraitTransparent} alt="Đỗ Mạnh Thành" />
         </div>
         <div className="lunch-badge">Một lời động viên nhỏ 💚</div>
         <h2>Mời Thành một bữa trưa nhé!</h2>
