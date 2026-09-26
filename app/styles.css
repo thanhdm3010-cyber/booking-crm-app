@@ -441,3 +441,51 @@ button.primary,.small{background:linear-gradient(90deg,#0b9a63,#078e5b)}
     margin-bottom:0!important;
   }
 }
+
+/* ===== Booking page 1 banner ===== */
+.booking-banner-shell{
+  position:relative;
+  width:100%;
+  overflow:hidden;
+  border-radius:28px;
+  background:#f4fbf7;
+  box-shadow:0 18px 50px rgba(15,76,129,.08);
+}
+.booking-banner-image{
+  display:block;
+  width:100%;
+  height:auto;
+  aspect-ratio:16/9;
+  object-fit:cover;
+}
+.booking-banner-action{
+  position:absolute;
+  left:5.8%;
+  bottom:8.8%;
+  width:31%;
+  height:10%;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+}
+.booking-banner-action:focus-visible{
+  outline:3px solid #0a9661;
+  outline-offset:4px;
+  border-radius:999px;
+}
+@media(max-width:700px){
+  .booking-banner-shell{
+    border-radius:18px;
+  }
+  .booking-banner-image{
+    width:100%;
+    height:auto;
+    object-fit:contain;
+  }
+  .booking-banner-action{
+    left:5.5%;
+    bottom:8.5%;
+    width:34%;
+    height:11%;
+  }
+}
