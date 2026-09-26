@@ -188,18 +188,32 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
 
   if(step==="survey") return <div id="booking-flow" className="booking-flow">
     <FlowSteps active={surveyPage===1?1:2}/>
-    {surveyPage===1 && <section className="booking-banner-shell">
-      <img
-        src="/booking-banner.svg"
-        alt="Đặt lịch tư vấn cùng Đỗ Mạnh Thành"
-        className="booking-banner-image"
-      />
-      <button
-        type="button"
-        className="booking-banner-action"
-        onClick={()=>document.querySelector(".survey-card")?.scrollIntoView({behavior:"smooth",block:"start"})}
-        aria-label="Bắt đầu khảo sát"
-      />
+    {surveyPage===1 && <section className="booking-banner-shell booking-banner-live">
+      <div className="booking-banner-copy">
+        <div className="booking-banner-pill">▣ &nbsp; TƯ VẤN 1:1 CÙNG ĐỖ MẠNH THÀNH</div>
+        <h1>Đặt lịch tư vấn cùng <span>Đỗ Mạnh Thành</span></h1>
+        <p className="booking-banner-desc">
+          Làm rõ mục tiêu, xác định hướng đi và chuẩn bị một kế hoạch phù hợp để xây kênh,
+          phát triển thương hiệu cá nhân và tạo ra cơ hội kinh doanh.
+        </p>
+        <div className="booking-banner-benefits">
+          <div><b>01</b><span>Khảo sát trước để hiểu đúng vấn đề</span></div>
+          <div><b>02</b><span>Chọn lịch phù hợp với thời gian của anh/chị</span></div>
+          <div><b>03</b><span>Trao đổi tập trung, thực tế và dễ áp dụng</span></div>
+        </div>
+        <button
+          type="button"
+          className="booking-banner-cta"
+          onClick={()=>document.querySelector(".survey-card")?.scrollIntoView({behavior:"smooth",block:"start"})}
+        >
+          Bắt đầu khảo sát <span>→</span>
+        </button>
+        <div className="booking-banner-privacy">🔒 Thông tin của anh/chị được bảo mật tuyệt đối.</div>
+      </div>
+      <div className="booking-banner-person">
+        <div className="booking-banner-shape"></div>
+        <img src={brandPortrait} alt="Đỗ Mạnh Thành" />
+      </div>
     </section>}
     <section className="card survey-card">
     <div className="survey-welcome">
