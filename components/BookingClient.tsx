@@ -188,26 +188,18 @@ export default function BookingClient({slug,hostName}:{slug:string;hostName:stri
 
   if(step==="survey") return <div id="booking-flow" className="booking-flow">
     <FlowSteps active={surveyPage===1?1:2}/>
-    {surveyPage===1 && <section className="brand-hero first-page-hero">
-      <div className="brand-copy">
-        <div className="hero-pill">TƯ VẤN 1:1 CÙNG ĐỖ MẠNH THÀNH</div>
-        <h1>Đặt lịch tư vấn cùng <span>Đỗ Mạnh Thành</span></h1>
-        <p>
-          Làm rõ mục tiêu, xác định hướng đi và chuẩn bị một kế hoạch phù hợp
-          để xây kênh, phát triển thương hiệu cá nhân và tạo ra cơ hội kinh doanh.
-        </p>
-        <div className="benefit-row">
-          <div><b>01</b><span>Khảo sát trước để hiểu đúng vấn đề</span></div>
-          <div><b>02</b><span>Chọn lịch phù hợp với thời gian của anh/chị</span></div>
-          <div><b>03</b><span>Trao đổi tập trung, thực tế và dễ áp dụng</span></div>
-        </div>
-        <button type="button" className="hero-cta" onClick={()=>document.querySelector(".survey-card")?.scrollIntoView({behavior:"smooth",block:"start"})}>▣ &nbsp; Bắt đầu khảo sát &nbsp; →</button>
-        <div className="privacy-note">🔒 Thông tin của anh/chị được bảo mật tuyệt đối.</div>
-      </div>
-      <div className="brand-photo-wrap">
-        <div className="brand-photo-bg"></div>
-        <img src={brandPortrait} alt="Đỗ Mạnh Thành" className="brand-photo" />
-      </div>
+    {surveyPage===1 && <section className="booking-banner-shell">
+      <img
+        src="/booking-banner.svg"
+        alt="Đặt lịch tư vấn cùng Đỗ Mạnh Thành"
+        className="booking-banner-image"
+      />
+      <button
+        type="button"
+        className="booking-banner-action"
+        onClick={()=>document.querySelector(".survey-card")?.scrollIntoView({behavior:"smooth",block:"start"})}
+        aria-label="Bắt đầu khảo sát"
+      />
     </section>}
     <section className="card survey-card">
     <div className="survey-welcome">
